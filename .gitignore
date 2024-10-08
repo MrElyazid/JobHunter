@@ -11,3 +11,6 @@ target/
 # Ignore other system files
 .DS_Store
 Thumbs.db
+
+# Ignore data directory 
+data/
