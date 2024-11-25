@@ -1,4 +1,4 @@
-package com.jobhunter.scraper;
+package com.jobhunter.LinksScraper;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -28,27 +28,12 @@ public class Rekrute {
                 for (Element job : jobListings) {
                     String title = job.select("a.titreJob").text().replace("\"", "'");
                     String link = "https://www.rekrute.com" + job.select("a.titreJob").attr("href");
-                    String description = job.select("div.info > span").text().replace("\"", "'");
-                    
-                    Elements infoItems = job.select("ul li");
-                    String experience = "";
-                    String educationLevel = "";
 
-                    for (Element item : infoItems) {
-                        if (item.text().contains("Expérience requise")) {
-                            experience = item.text().replace("\"", "'");
-                        } else if (item.text().contains("Niveau d'étude demandé")) {
-                            educationLevel = item.text().replace("\"", "'");
-                        }
-                    }
 
                     JsonObject jobJson = new JsonObject();
                     jobJson.addProperty("title", title);
                     jobJson.addProperty("link", link);
-                    jobJson.addProperty("description", description);
-                    jobJson.addProperty("experience", experience);
-                    jobJson.addProperty("educationLevel", educationLevel);
-                    
+
                     jobsArray.add(jobJson);
                 }
             }

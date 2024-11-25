@@ -1,4 +1,4 @@
-package com.jobhunter.scraper;
+package com.jobhunter.LinksScraper;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -30,20 +30,12 @@ public class MarocAnnonces {
                 for (Element job : jobListings) {
                     String title = job.select("a").attr("title");
                     String link = job.select("a").attr("href");
-                    String location = job.select("span.location").text();
-                    String description = job.select("p").text();
-                    String educationLevel = job.select("div.niveauetude").text();
-                    String salary = job.select("div.salary").text();
-                    String date = job.select("div.time em.date").text();
+
 
                     JsonObject jobJson = new JsonObject();
                     jobJson.addProperty("title", title);
                     jobJson.addProperty("link", "https://www.marocannonces.com/" + link);
-                    jobJson.addProperty("location", location);
-                    jobJson.addProperty("description", description);
-                    jobJson.addProperty("educationLevel", educationLevel);
-                    jobJson.addProperty("salary", salary);
-                    jobJson.addProperty("date", date);
+
                     
                     jobsArray.add(jobJson);
                 }

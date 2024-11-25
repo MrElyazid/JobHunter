@@ -1,4 +1,4 @@
-package com.jobhunter.scraper;
+package com.jobhunter.LinksScraper;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -30,16 +30,12 @@ public class EmploiMa {
                     // Extract job link, title, company name, and description
                     String jobLink = card.attr("data-href");
                     String jobTitle = card.select("div.card-job-detail h3 a").text();
-                    String companyName = card.select("div.card-job-detail a.card-job-company").text();
-                    String jobDescription = card.select("div.card-job-detail div.card-job-description p").text();
-
+                    
                     // Create a JSON object for the job
                     JsonObject jobJson = new JsonObject();
                     jobJson.addProperty("title", jobTitle);
                     jobJson.addProperty("link", jobLink);
-                    jobJson.addProperty("company", companyName);
-                    jobJson.addProperty("description", jobDescription);
-
+                    
                     // Add job JSON object to the array
                     jobPostsArray.add(jobJson);
                 }

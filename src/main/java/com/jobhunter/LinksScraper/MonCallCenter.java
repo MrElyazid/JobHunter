@@ -1,4 +1,4 @@
-package com.jobhunter.scraper;
+package com.jobhunter.LinksScraper;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -26,21 +26,12 @@ public class MonCallCenter {
                 for (Element jobPost : jobPosts) {
                     String jobLink = jobPost.select("div:nth-child(1) > div:nth-child(2) > h2:nth-child(1) > a:nth-child(1)").attr("href");
                     String jobTitle = jobPost.select("div:nth-child(1) > div:nth-child(2) > h2:nth-child(1) > a:nth-child(1)").text();
-                    String jobDescription = jobPost.select("div:nth-child(1) > div:nth-child(2) > div:nth-child(3) > p:nth-child(1)").text();
-                    String jobLocationAndDate = jobPost.select("div:nth-child(1) > div:nth-child(2) > div:nth-child(2) > span:nth-child(1)").text();
-
-                    // Split location and date
-                    String[] locationAndDateSplit = jobLocationAndDate.split(" \\| ");
-                    String jobDate = locationAndDateSplit[0].trim();
-                    String jobLocation = locationAndDateSplit.length > 1 ? locationAndDateSplit[2].trim() : "Location not available";
 
                     // Create a JSON object for the job
                     JsonObject jobJson = new JsonObject();
                     jobJson.addProperty("title", jobTitle);
                     jobJson.addProperty("link", "https://www.moncallcenter.ma" + jobLink);
-                    jobJson.addProperty("description", jobDescription);
-                    jobJson.addProperty("date", jobDate);
-                    jobJson.addProperty("location", jobLocation);
+
 
                     // Add job JSON object to the array
                     jobPostsArray.add(jobJson);

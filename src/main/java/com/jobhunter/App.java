@@ -1,14 +1,20 @@
 package com.jobhunter;
 
 import javax.swing.*;
+
+import com.jobhunter.LinksScraper.EmploiMa;
+import com.jobhunter.LinksScraper.MarocAnnonces;
+import com.jobhunter.LinksScraper.MonCallCenter;
+import com.jobhunter.LinksScraper.Rekrute;
+import com.jobhunter.LinksScraper.StagairesMa;
+import com.jobhunter.LinksScraper.Anapec;
+import com.jobhunter.LinksScraper.OffresEmploiMa;
+import com.jobhunter.LinksScraper.MJobMa;
+import com.jobhunter.LinksScraper.KhdmaMa;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import com.jobhunter.scraper.StagairesMa;
-import com.jobhunter.scraper.Rekrute;
-import com.jobhunter.scraper.MarocAnnonces;
-import com.jobhunter.scraper.MonCallCenter;
-import com.jobhunter.scraper.EmploiMa;
 
 public class App {
     private JFrame frame;
@@ -17,6 +23,10 @@ public class App {
     private JButton marocAnnoncesButton;
     private JButton monCallCenterButton;
     private JButton emploiMaButton;
+    private JButton anapecButton;
+    private JButton offresEmploiMaButton;
+    private JButton mjobMaButton;
+    private JButton khdmaMaButton;
     private JButton quitButton;
 
     public App() {
@@ -25,22 +35,30 @@ public class App {
 
     private void initialize() {
         frame = new JFrame("Job Scraper");
-        frame.setBounds(100, 100, 300, 300);  // Adjusted the height to accommodate the new button
+        frame.setBounds(100, 100, 300, 500);  // Adjusted the height to accommodate the new buttons
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new GridLayout(6, 1, 10, 10));  // Changed to 6 rows
+        frame.setLayout(new GridLayout(10, 1, 10, 10));  // Changed to 10 rows
 
         stagairesMaButton = new JButton("Run StagairesMa Scraper");
         rekruteButton = new JButton("Run Rekrute Scraper");
         marocAnnoncesButton = new JButton("Run MarocAnnonces Scraper");
         monCallCenterButton = new JButton("Run MonCallCenter Scraper");
-        emploiMaButton = new JButton("Run EmploiMa Scraper");  // New button
+        emploiMaButton = new JButton("Run EmploiMa Scraper");
+        anapecButton = new JButton("Run Anapec Scraper");
+        offresEmploiMaButton = new JButton("Run OffresEmploiMa Scraper");
+        mjobMaButton = new JButton("Run MjobMa Scraper");
+        khdmaMaButton = new JButton("Run KhdmaMa Scraper");
         quitButton = new JButton("Quit");
 
         frame.add(stagairesMaButton);
         frame.add(rekruteButton);
         frame.add(marocAnnoncesButton);
         frame.add(monCallCenterButton);
-        frame.add(emploiMaButton);  // Added EmploiMa button
+        frame.add(emploiMaButton);
+        frame.add(anapecButton);
+        frame.add(offresEmploiMaButton);
+        frame.add(mjobMaButton);
+        frame.add(khdmaMaButton);
         frame.add(quitButton);
 
         stagairesMaButton.addActionListener(new ActionListener() {
@@ -67,9 +85,33 @@ public class App {
             }
         });
 
-        emploiMaButton.addActionListener(new ActionListener() {  // Added action for EmploiMaScraper
+        emploiMaButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 runScraper("EmploiMa");
+            }
+        });
+
+        anapecButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                runScraper("Anapec");
+            }
+        });
+
+        offresEmploiMaButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                runScraper("OffresEmploiMa");
+            }
+        });
+
+        mjobMaButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                runScraper("MJobMa");
+            }
+        });
+
+        khdmaMaButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                runScraper("KhdmaMa");
             }
         });
 
@@ -97,8 +139,20 @@ public class App {
                     case "MonCallCenter":
                         new MonCallCenter().scrape();
                         break;
-                    case "EmploiMa":  // New case for EmploiMaScraper
+                    case "EmploiMa":
                         new EmploiMa().scrape();
+                        break;
+                    case "Anapec":
+                        new Anapec().scrape();
+                        break;
+                    case "OffresEmploiMa":
+                        new OffresEmploiMa().scrape();
+                        break;
+                    case "MjobMa":
+                        new MJobMa().scrape();
+                        break;
+                    case "KhdmaMa":
+                        new KhdmaMa().scrape();
                         break;
                 }
                 return null;

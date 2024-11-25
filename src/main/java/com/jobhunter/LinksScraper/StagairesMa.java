@@ -1,4 +1,4 @@
-package com.jobhunter.scraper;
+package com.jobhunter.LinksScraper;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
