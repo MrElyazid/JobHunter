@@ -12,6 +12,8 @@ import com.jobhunter.LinksScraper.OffresEmploiMa;
 import com.jobhunter.LinksScraper.MJobMa;
 import com.jobhunter.LinksScraper.KhdmaMa;
 
+import com.jobhunter.DynamicScrapers.Indeed;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -27,8 +29,9 @@ public class App {
     private JButton offresEmploiMaButton;
     private JButton mjobMaButton;
     private JButton khdmaMaButton;
+    private JButton indeedButton;
     private JButton quitButton;
-
+    
     public App() {
         initialize();
     }
@@ -48,6 +51,7 @@ public class App {
         offresEmploiMaButton = new JButton("Run OffresEmploiMa Scraper");
         mjobMaButton = new JButton("Run MjobMa Scraper");
         khdmaMaButton = new JButton("Run KhdmaMa Scraper");
+        indeedButton = new JButton("Run indeed scraper");
         quitButton = new JButton("Quit");
 
         frame.add(stagairesMaButton);
@@ -59,6 +63,8 @@ public class App {
         frame.add(offresEmploiMaButton);
         frame.add(mjobMaButton);
         frame.add(khdmaMaButton);
+        frame.add(indeedButton);
+
         frame.add(quitButton);
 
         stagairesMaButton.addActionListener(new ActionListener() {
@@ -66,6 +72,14 @@ public class App {
                 runScraper("StagairesMa");
             }
         });
+
+
+        indeedButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                runScraper("Indeed");
+            }
+        });
+
 
         rekruteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -154,6 +168,9 @@ public class App {
                     case "KhdmaMa":
                         new KhdmaMa().scrape();
                         break;
+                    case "Indeed":
+                    Indeed indeedScraper = new Indeed("développement informatique", "Casablanca", 5);
+                    indeedScraper.scrape();
                 }
                 return null;
             }

@@ -18,22 +18,20 @@ public class MJobMa {
     public void scrape() {
         JsonArray jobPostsArray = new JsonArray();
 
-        for (int page = 0; page < MAX_PAGES; page++) { // Pages from 0 to 9
+        for (int page = 0; page < MAX_PAGES; page++) {
             try {
                 String url = BASE_URL + page;
                 Document doc = Jsoup.connect(url).get();
-                Elements jobPosts = doc.select("div.offers-boxes > div.offer-box"); // Select all job offer elements
+                Elements jobPosts = doc.select("div.offers-boxes > div.offer-box");
 
                 for (Element jobPost : jobPosts) {
-                    String jobLink = jobPost.select("div.offer-heading > h3.offer-title > a").attr("href"); // Extract href
-                    String jobTitle = jobPost.select("div.offer-heading > h3.offer-title > a").text(); // Extract text of the title
+                    String jobLink = jobPost.select("div.offer-heading > h3.offer-title > a").attr("href");
+                    String jobTitle = jobPost.select("div.offer-heading > h3.offer-title > a").text();
 
-                    // Create a JSON object for the job
                     JsonObject jobJson = new JsonObject();
                     jobJson.addProperty("title", jobTitle);
                     jobJson.addProperty("link", jobLink);
 
-                    // Add job JSON object to the array
                     jobPostsArray.add(jobJson);
                 }
             } catch (IOException e) {
@@ -41,7 +39,6 @@ public class MJobMa {
             }
         }
 
-        // Save the JSON array to a file using the JsonUtils method
         JsonUtils.saveJsonToFile(jobPostsArray, "data/MJobLinks.json");
         System.out.println("MJob scraping completed. Results saved to data/MJobLinks.json");
     }

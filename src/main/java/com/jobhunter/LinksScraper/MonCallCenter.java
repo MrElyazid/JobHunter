@@ -27,13 +27,11 @@ public class MonCallCenter {
                     String jobLink = jobPost.select("div:nth-child(1) > div:nth-child(2) > h2:nth-child(1) > a:nth-child(1)").attr("href");
                     String jobTitle = jobPost.select("div:nth-child(1) > div:nth-child(2) > h2:nth-child(1) > a:nth-child(1)").text();
 
-                    // Create a JSON object for the job
                     JsonObject jobJson = new JsonObject();
                     jobJson.addProperty("title", jobTitle);
                     jobJson.addProperty("link", "https://www.moncallcenter.ma" + jobLink);
 
 
-                    // Add job JSON object to the array
                     jobPostsArray.add(jobJson);
                 }
 
@@ -42,7 +40,6 @@ public class MonCallCenter {
             }
         }
 
-        // Save the JSON array to a file using the JsonUtils method
         JsonUtils.saveJsonToFile(jobPostsArray, "data/MonCallCenterLinks.json");
         System.out.println("MonCallCenter scraping completed. Results saved to data/MonCallCenterLinks.json");
     }
