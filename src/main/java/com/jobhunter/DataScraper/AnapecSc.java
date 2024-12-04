@@ -8,7 +8,6 @@ import org.json.JSONObject;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -20,42 +19,105 @@ public class AnapecSc {
         JSONObject jobDetails = new JSONObject();
         try {
             Document doc = Jsoup.connect(url).get();
-            Element mainDiv = doc.getElementById("oneofmine");
 
-            if (mainDiv != null) {
-                // Scrape description de l'entreprise
-                String descEntreprise = mainDiv.select("#oneofmine > p:nth-child(3) > span:nth-child(1)").text();
+            // Extract job title
+String jobTitle = doc.selectFirst("h5.ref_offre3 span.ref_offre2") != null
+? doc.select("h5.ref_offre3 span.ref_offre2").text()
+: "N/A";
 
-                // Scrape description de poste
-                String typeDeContrat = mainDiv.select("#oneofmine > p:nth-child(6)").text();
-                String lieuDeTravail = mainDiv.select("#oneofmine > p:nth-child(7)").text();
-                String descPoste = typeDeContrat + "; " + lieuDeTravail;
+// Extract reference, date, and agency
+Element infoOffre = doc.selectFirst("p.info_offre");
+String reference = (infoOffre != null && infoOffre.selectFirst("br") != null) 
+? infoOffre.html().split("Référence de l’offre:")[1].split("<br>")[0].trim()
+: "N/A";
+String date = (infoOffre != null && infoOffre.selectFirst("br") != null)
+? infoOffre.html().split("Date :")[1].split("<br>")[0].trim()
+: "N/A";
+String agency = (infoOffre != null && infoOffre.selectFirst("br") != null)
+? infoOffre.html().split("Agence :")[1].split("<br>")[0].trim()
+: "N/A";
 
-                // Scrape profil recherché
-                String descProfil = mainDiv.select("#oneofmine > p:nth-child(9)").text();
-                String formation = mainDiv.select("#oneofmine > p:nth-child(10)").text();
-                String langues = mainDiv.select("#oneofmine > p:nth-child(11)").text();
-                String profilRecherche = descProfil + "; " + formation + "; " + langues;
+// Extract company description
+String companyDescription = doc.selectFirst("div#oneofmine > p > span") != null
+? doc.select("div#oneofmine > p > span").text()
+: "N/A";
 
-                // Add to JSON object
-                jobDetails.put("desc_entreprise", descEntreprise);
-                jobDetails.put("desc_poste", descPoste);
-                jobDetails.put("profil_recherche", profilRecherche);
-            } else {
-                System.out.println("No job details found on page: " + url);
-            }
+// Extract job description
+String contractType = doc.selectFirst("p.ref_typecontrat span") != null
+? doc.select("p.ref_typecontrat span").text()
+: "N/A";
+String workLocation = doc.selectFirst("p.ref_lieutravail span") != null
+? doc.select("p.ref_lieutravail span").text()
+: "N/A";
+String jobCharacteristics = doc.selectFirst("p.ref_postechara span") != null
+? doc.select("p.ref_postechara span").text()
+: "N/A";
+
+// Concatenate job description
+String jobDescription = String.format(
+"Type de contrat: %s; Lieu de travail: %s; Caractéristiques: %s",
+contractType, workLocation, jobCharacteristics
+);
+
+// Extract profile requirements
+String profileDescription = doc.selectFirst("p.profil_description span") != null
+? doc.select("p.profil_description span").text()
+: "N/A";
+String formation = doc.selectFirst("p.profil_formation span") != null
+? doc.select("p.profil_formation span").text()
+: "N/A";
+String experience = doc.selectFirst("p.profil_experience span") != null
+? doc.select("p.profil_experience span").text()
+: "N/A";
+String position = doc.selectFirst("p.profil_poste span") != null
+? doc.select("p.profil_poste span").text()
+: "N/A";
+String languages = doc.selectFirst("p.profil_langues span") != null
+? doc.select("p.profil_langues span").text()
+: "N/A";
+
+// Concatenate profile requirements
+String profileRequirements = String.format(
+"Description: %s; Formation: %s; Expérience: %s; Poste: %s; Langues: %s",
+profileDescription, formation, experience, position, languages
+);
+
+
+            // Add extracted data to JSON object
+            jobDetails.put("title", jobTitle);
+            jobDetails.put("reference", reference);
+            jobDetails.put("date", date);
+            jobDetails.put("agency", agency);
+            jobDetails.put("company_description", companyDescription);
+            jobDetails.put("job_description", jobDescription);
+            jobDetails.put("profile_requirements", profileRequirements);
         } catch (IOException e) {
             System.out.println("Error connecting to URL: " + url + " - " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Unexpected error scraping URL: " + url + " - " + e.getMessage());
         }
         return jobDetails;
     }
 
     public static void main(String[] args) {
         // Input JSON file path and output file path (modify these as needed)
-        String inputFilePath = "data\\AnapecLinks.json"; // Replace with the actual file path
-        String outputFilePath = "job_details.json"; // Replace with the actual file path
+        String inputFilePath = "data/AnapecLinks.json"; // Replace with the actual file path
+        String outputFolderPath = "lastScrappe"; // Folder to save the output file
+        String outputFileName = "anapecData.json"; // Output file name
+        String outputFilePath = outputFolderPath + "/" + outputFileName;
 
-        try (FileReader reader = new FileReader(inputFilePath)) {
+        try {
+            // Ensure the output folder exists
+            java.io.File folder = new java.io.File(outputFolderPath);
+            if (!folder.exists()) {
+                boolean folderCreated = folder.mkdirs();
+                if (folderCreated) {
+                    System.out.println("Created folder: " + outputFolderPath);
+                } else {
+                    System.out.println("Failed to create folder: " + outputFolderPath);
+                }
+            }
+
             // Read and parse JSON input
             String content = new String(Files.readAllBytes(Paths.get(inputFilePath)));
             JSONArray jobLinksArray = new JSONArray(content);
@@ -69,7 +131,7 @@ public class AnapecSc {
 
                 // Scrape data for each job and add to results
                 JSONObject jobDetails = scrapeJobDetails(link);
-                jobDetails.put("title", jobEntry.getString("title")); // Include title from input
+                jobDetails.put("input_title", jobEntry.getString("title")); // Include title from input
                 jobDetails.put("link", link);
                 results.put(jobDetails);
             }

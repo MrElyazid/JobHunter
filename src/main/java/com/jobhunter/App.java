@@ -8,8 +8,6 @@ import com.jobhunter.LinksScraper.MonCallCenter;
 import com.jobhunter.LinksScraper.Rekrute;
 import com.jobhunter.LinksScraper.StagairesMa;
 import com.jobhunter.LinksScraper.Anapec;
-import com.jobhunter.LinksScraper.OffresEmploiMa;
-import com.jobhunter.LinksScraper.MJobMa;
 import com.jobhunter.LinksScraper.KhdmaMa;
 
 import com.jobhunter.DynamicScrapers.Indeed;
@@ -26,8 +24,6 @@ public class App {
     private JButton monCallCenterButton;
     private JButton emploiMaButton;
     private JButton anapecButton;
-    private JButton offresEmploiMaButton;
-    private JButton mjobMaButton;
     private JButton khdmaMaButton;
     private JButton indeedButton;
     private JButton quitButton;
@@ -48,8 +44,6 @@ public class App {
         monCallCenterButton = new JButton("Run MonCallCenter Scraper");
         emploiMaButton = new JButton("Run EmploiMa Scraper");
         anapecButton = new JButton("Run Anapec Scraper");
-        offresEmploiMaButton = new JButton("Run OffresEmploiMa Scraper");
-        mjobMaButton = new JButton("Run MjobMa Scraper");
         khdmaMaButton = new JButton("Run KhdmaMa Scraper");
         indeedButton = new JButton("Run indeed scraper");
         quitButton = new JButton("Quit");
@@ -60,8 +54,6 @@ public class App {
         frame.add(monCallCenterButton);
         frame.add(emploiMaButton);
         frame.add(anapecButton);
-        frame.add(offresEmploiMaButton);
-        frame.add(mjobMaButton);
         frame.add(khdmaMaButton);
         frame.add(indeedButton);
 
@@ -111,18 +103,6 @@ public class App {
             }
         });
 
-        offresEmploiMaButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                runScraper("OffresEmploiMa");
-            }
-        });
-
-        mjobMaButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                runScraper("MJobMa");
-            }
-        });
-
         khdmaMaButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 runScraper("KhdmaMa");
@@ -158,12 +138,6 @@ public class App {
                         break;
                     case "Anapec":
                         new Anapec().scrape();
-                        break;
-                    case "OffresEmploiMa":
-                        new OffresEmploiMa().scrape();
-                        break;
-                    case "MjobMa":
-                        new MJobMa().scrape();
                         break;
                     case "KhdmaMa":
                         new KhdmaMa().scrape();
