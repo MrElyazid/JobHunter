@@ -15,89 +15,121 @@ import java.io.IOException;
 public class AnapecSc {
 
     // Method to scrape data from a single job offer page
-    private static JSONObject scrapeJobDetails(String url) {
-        JSONObject jobDetails = new JSONObject();
-        try {
-            Document doc = Jsoup.connect(url).get();
+    // Method to scrape data from a single job offer page
+private static JSONObject scrapeJobDetails(String url) {
+    JSONObject jobDetails = new JSONObject();
+    try {
+        Document doc = Jsoup.connect(url).get();
 
-            // Extract job title
-String jobTitle = doc.selectFirst("h5.ref_offre3 span.ref_offre2") != null
-? doc.select("h5.ref_offre3 span.ref_offre2").text()
-: "N/A";
+        // Extract job title
+        String jobTitle = doc.selectFirst("h5.ref_offre3 span.ref_offre2") != null
+            ? doc.select("h5.ref_offre3 span.ref_offre2").text()
+            : "N/A";
 
+        // Extract reference, date, and agency
+        Element infoOffre = doc.selectFirst("p.info_offre");
 // Extract reference, date, and agency
-Element infoOffre = doc.selectFirst("p.info_offre");
-String reference = (infoOffre != null && infoOffre.selectFirst("br") != null) 
-? infoOffre.html().split("Référence de l’offre:")[1].split("<br>")[0].trim()
-: "N/A";
-String date = (infoOffre != null && infoOffre.selectFirst("br") != null)
-? infoOffre.html().split("Date :")[1].split("<br>")[0].trim()
-: "N/A";
-String agency = (infoOffre != null && infoOffre.selectFirst("br") != null)
-? infoOffre.html().split("Agence :")[1].split("<br>")[0].trim()
-: "N/A";
+if (infoOffre != null) {
+    // Convert the entire text of `infoOffre` to a single string
+    String infoText = infoOffre.text();
 
-// Extract company description
+    // Extract reference
+    String reference = infoText.contains("Référence de l’offre:") 
+        ? infoText.split("Référence de l’offre:")[1].split("Date :")[0].trim() 
+        : "N/A";
+
+    // Extract date
+    String date = infoText.contains("Date :") 
+        ? infoText.split("Date :")[1].split("Agence :")[0].trim() 
+        : "N/A";
+
+    // Extract agency
+    String agency = infoText.contains("Agence :") 
+        ? infoText.split("Agence :")[1].trim() 
+        : "N/A";
+
+    // Add extracted values to JSON
+    jobDetails.put("reference", reference);
+    jobDetails.put("date", date);
+    jobDetails.put("agency", agency);
+} else {
+    jobDetails.put("reference", "N/A");
+    jobDetails.put("date", "N/A");
+    jobDetails.put("agency", "N/A");
+}
+
+        // Extract company description
 String companyDescription = doc.selectFirst("div#oneofmine > p > span") != null
 ? doc.select("div#oneofmine > p > span").text()
 : "N/A";
 
-// Extract job description
-String contractType = doc.selectFirst("p.ref_typecontrat span") != null
-? doc.select("p.ref_typecontrat span").text()
-: "N/A";
-String workLocation = doc.selectFirst("p.ref_lieutravail span") != null
-? doc.select("p.ref_lieutravail span").text()
-: "N/A";
-String jobCharacteristics = doc.selectFirst("p.ref_postechara span") != null
-? doc.select("p.ref_postechara span").text()
+// Extract "langues" information
+Element languagesElement = doc.selectFirst("p[style*='margin-left: 81px;']");
+String languages = (languagesElement != null)
+? languagesElement.html().replace("<br>", "\n").trim()
 : "N/A";
 
-// Concatenate job description
-String jobDescription = String.format(
-"Type de contrat: %s; Lieu de travail: %s; Caractéristiques: %s",
-contractType, workLocation, jobCharacteristics
-);
+// Append languages to company description
+if (!languages.equals("N/A")) {
+companyDescription += " Langues: " + languages;
+}
 
-// Extract profile requirements
-String profileDescription = doc.selectFirst("p.profil_description span") != null
-? doc.select("p.profil_description span").text()
-: "N/A";
-String formation = doc.selectFirst("p.profil_formation span") != null
-? doc.select("p.profil_formation span").text()
-: "N/A";
-String experience = doc.selectFirst("p.profil_experience span") != null
-? doc.select("p.profil_experience span").text()
-: "N/A";
-String position = doc.selectFirst("p.profil_poste span") != null
-? doc.select("p.profil_poste span").text()
-: "N/A";
-String languages = doc.selectFirst("p.profil_langues span") != null
-? doc.select("p.profil_langues span").text()
-: "N/A";
+        // Extract job description
+        String contractType = doc.selectFirst("p.ref_typecontrat span") != null
+            ? doc.select("p.ref_typecontrat span").text()
+            : "N/A";
+        String workLocation = doc.selectFirst("p.ref_lieutravail span") != null
+            ? doc.select("p.ref_lieutravail span").text()
+            : "N/A";
+        String jobCharacteristics = doc.selectFirst("p.ref_postechara span") != null
+            ? doc.select("p.ref_postechara span").text()
+            : "N/A";
 
-// Concatenate profile requirements
-String profileRequirements = String.format(
-"Description: %s; Formation: %s; Expérience: %s; Poste: %s; Langues: %s",
-profileDescription, formation, experience, position, languages
-);
+        String jobDescription = String.format(
+            "Type de contrat: %s; Lieu de travail: %s; Caractéristiques: %s",
+            contractType, workLocation, jobCharacteristics
+        );
 
+        // Extract profile details
+        String profileDescription = doc.selectFirst("p.profil_description span") != null
+            ? doc.select("p.profil_description span").text()
+            : "N/A";
+        String formation = doc.selectFirst("p.profil_formation span") != null
+            ? doc.select("p.profil_formation span").text()
+            : "N/A";
+        String experience = doc.selectFirst("p.profil_experience span") != null
+            ? doc.select("p.profil_experience span").text()
+            : "N/A";
+        String position = doc.selectFirst("p.profil_poste span") != null
+            ? doc.select("p.profil_poste span").text()
+            : "N/A";
+        /*String languages = doc.selectFirst("p.profil_langues span") != null
+            ? doc.select("p.profil_langues span").text()
+            : "N/A";*/
 
-            // Add extracted data to JSON object
-            jobDetails.put("title", jobTitle);
-            jobDetails.put("reference", reference);
-            jobDetails.put("date", date);
-            jobDetails.put("agency", agency);
-            jobDetails.put("company_description", companyDescription);
-            jobDetails.put("job_description", jobDescription);
-            jobDetails.put("profile_requirements", profileRequirements);
-        } catch (IOException e) {
-            System.out.println("Error connecting to URL: " + url + " - " + e.getMessage());
-        } catch (Exception e) {
-            System.out.println("Unexpected error scraping URL: " + url + " - " + e.getMessage());
-        }
-        return jobDetails;
+        String profileRequirements = String.format(
+            "Description: %s; Formation: %s; Expérience: %s; Poste: %s; Langues: %s",
+            profileDescription, formation, experience, position, languages
+        );
+
+        // Add extracted data to JSON object
+        jobDetails.put("title", jobTitle);
+        /*jobDetails.put("reference", reference);
+        jobDetails.put("date", date);
+        jobDetails.put("agency", agency);*/
+        jobDetails.put("company_description", companyDescription);
+        jobDetails.put("job_description", jobDescription);
+        jobDetails.put("profile_requirements", profileRequirements);
+
+    } catch (IOException e) {
+        System.out.println("Error connecting to URL: " + url + " - " + e.getMessage());
+    } catch (Exception e) {
+        System.out.println("Unexpected error scraping URL: " + url + " - " + e.getMessage());
     }
+    return jobDetails;
+}
+
+    
 
     public static void main(String[] args) {
         // Input JSON file path and output file path (modify these as needed)
