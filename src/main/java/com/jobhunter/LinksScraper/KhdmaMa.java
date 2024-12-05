@@ -35,11 +35,16 @@ public class KhdmaMa {
                     jobPostsArray.add(jobJson);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                System.err.println("Error scraping page " + page + ": " + e.getMessage());
             }
         }
 
         JsonUtils.saveJsonToFile(jobPostsArray, "data/KhdmaLinks.json");
         System.out.println("Khdma scraping completed. Results saved to data/KhdmaLinks.json");
+    }
+
+    public static void main(String[] args) {
+        KhdmaMa scraper = new KhdmaMa();
+        scraper.scrape();
     }
 }
