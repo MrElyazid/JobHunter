@@ -46,4 +46,8 @@ public class EmploiMa {
         JsonUtils.saveJsonToFile(jobPostsArray, "data/EmploiMaLinks.json");
         System.out.println("EmploiMa scraping completed. Results saved to data/EmploiMaLinks.json");
     }
+    public static void main(String[] args) {
+        EmploiMa emploiMa = new EmploiMa();
+        emploiMa.scrape();  // Calls the scraping method
+    }
 }
