@@ -41,11 +41,11 @@ public class KhdmaMaSc {
                     jobDetails.addProperty("link", jobLink);
 
                     // Scrape job description
-                    Element jobDescriptionElement = doc.selectFirst(".listing-title p");
+                    Element jobDescriptionElement = doc.selectFirst("div.eleven:nth-child(2) > div:nth-child(1) > div:nth-child(2)");
                     jobDetails.addProperty("description", jobDescriptionElement != null ? jobDescriptionElement.text() : "No description available");
 
                     // Scrape company name
-                    Element companyElement = doc.selectFirst(".listing-icons li i + text");
+                    Element companyElement = doc.selectFirst(".content > h4:nth-child(1)");
                     jobDetails.addProperty("company", companyElement != null ? companyElement.text().trim() : "Unknown");
 
                     // Scrape posting date

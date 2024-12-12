@@ -65,8 +65,14 @@ public class RekruteScraper {
             Element introToSocieteElement = targetDiv != null ? targetDiv.select("div#recruiterDescription p").first() : null;
             jobInfo.addProperty("company", (introToSocieteElement != null) ? introToSocieteElement.text() : "No company info found");
 
-            Element skillsElement = jobDoc.select("div.skills").first();
-            jobInfo.addProperty("skills", (skillsElement != null) ? skillsElement.text() : "No skills found");
+            Element RecruiterElement = jobDoc.select("#recruiterDescription").first();
+            jobInfo.addProperty("recruiterDescription", (RecruiterElement != null) ? RecruiterElement.text() : "No Recruiter Description Found");
+
+            Element PostElement = jobDoc.select("div.col-md-12:nth-child(5)").first();
+            jobInfo.addProperty("postDescription", (PostElement != null) ? PostElement.text() : "No Post Description Found");
+
+            Element ProfilElement = jobDoc.select("div.col-md-12:nth-child(6)").first();
+            jobInfo.addProperty("profilDescription", (ProfilElement != null) ? ProfilElement.text() : "No Profil Description Found");
 
             Element expDiv = jobDoc.select("ul.featureInfo").first();
             Element educationElement = expDiv != null ? expDiv.select("li").eq(2).first() : null;
