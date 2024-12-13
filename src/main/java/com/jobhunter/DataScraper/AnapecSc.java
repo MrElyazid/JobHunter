@@ -8,13 +8,11 @@ import org.json.JSONObject;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
 public class AnapecSc {
-
-    // Method to scrape data from a single job offer page
+    
     // Method to scrape data from a single job offer page
 private static JSONObject scrapeJobDetails(String url) {
     JSONObject jobDetails = new JSONObject();
