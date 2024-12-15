@@ -13,7 +13,7 @@ import java.io.IOException;
 public class KhdmaMa {
 
     private static final String BASE_URL = "https://khdma.ma/offres-emploi-maroc/";
-    private static final int MAX_PAGES = 10;
+    private static final int MAX_PAGES = 4;
 
     public void scrape() {
         JsonArray jobPostsArray = new JsonArray();

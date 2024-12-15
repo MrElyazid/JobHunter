@@ -12,7 +12,7 @@ import com.jobhunter.util.JsonUtils;
 public class StagairesMa {
 
     private static final String BASE_URL = "https://www.stagiaires.ma/offres-de-stages-et-premier-emploi-maroc/?pages=";
-    private static final int MAX_PAGES = 10;
+    private static final int MAX_PAGES = 4;
 
     public void scrape() {
         JsonArray jobPostsArray = new JsonArray();

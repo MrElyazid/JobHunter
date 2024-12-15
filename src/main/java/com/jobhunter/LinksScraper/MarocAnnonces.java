@@ -15,7 +15,7 @@ public class MarocAnnonces {
 
     private static final String BASE_URL = "https://www.marocannonces.com/categorie/309/Emploi/Offres-emploi/";
     private static final int START_PAGE = 2;
-    private static final int END_PAGE = 11;
+    private static final int END_PAGE = 4;
 
     public void scrape() {
         JsonArray jobsArray = new JsonArray();
