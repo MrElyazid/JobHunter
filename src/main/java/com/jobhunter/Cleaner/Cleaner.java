@@ -65,7 +65,7 @@ public class Cleaner {
                         ArrayList<Map<String, Object>> messages = new ArrayList<>();
                         messages.add(Map.of(
                             "role", "user",
-                            "content", "You are tasked with cleaning and extracting structured data from job offers in JSON format. The input consists of a JSON object containing a job offer, scraped from a website, likely in French. The data may have special character issues and missing fields. Generate a structured JSON object adhering to the schema given to you in the parameters. Here is the json job_offer: " + jobOffer.toString()
+                            "content", "You are tasked with cleaning and extracting structured data from job offers in JSON format. The input consists of a JSON object containing a job offer, scraped from a website, likely in French. The data may have special character issues and missing fields, for the output dont write french special characters like é, è à ... etc, instead replace them with e, a ... etc, and dont write '. Generate a structured JSON object adhering to the schema given to you in the parameters. Here is the json job_offer: " + jobOffer.toString()
                         ));
                         body.put("messages", messages);
 
