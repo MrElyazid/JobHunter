@@ -12,7 +12,7 @@ import java.io.IOException;
 public class MonCallCenter {
 
     private static final String BASE_URL = "https://www.moncallcenter.ma/offres-emploi/";
-    private static final int MAX_PAGES = 4;
+    private static final int MAX_PAGES = 7;
 
     public void scrape() {
         JsonArray jobPostsArray = new JsonArray();

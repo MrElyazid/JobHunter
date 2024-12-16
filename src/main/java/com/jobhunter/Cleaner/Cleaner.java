@@ -56,7 +56,7 @@ public class Cleaner {
                         System.out.println("Processing job offer from file: " + jsonFile.getName());
                         
                         String apiUrl = "https://openrouter.ai/api/v1/chat/completions";
-                        String apiKey = "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";
+                        String apiKey = "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";
 
                         Map<String, Object> body = new HashMap<>();
                         body.put("model", "openai/gpt-4o-mini-2024-07-18");

@@ -13,7 +13,7 @@ import java.io.IOException;
 public class Anapec {
 
     private static final String BASE_URL = "https://anapec.ma/home-page-o1/chercheur-emploi/offres-demploi/?pg=";
-    private static final int MAX_PAGES = 6;
+    private static final int MAX_PAGES = 5;
 
     public void scrape() {
         JsonArray jobPostsArray = new JsonArray();

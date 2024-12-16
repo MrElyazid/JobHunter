@@ -13,7 +13,7 @@ import java.io.IOException;
 public class EmploiMa {
 
     private static final String BASE_URL = "https://www.emploi.ma/recherche-jobs-maroc?page=";
-    private static final int MAX_PAGES = 4;
+    private static final int MAX_PAGES = 12;
 
     public void scrape() {
         JsonArray jobPostsArray = new JsonArray();

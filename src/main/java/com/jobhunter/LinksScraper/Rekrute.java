@@ -13,7 +13,7 @@ import com.jobhunter.util.JsonUtils;
 public class Rekrute {
 
     private static final String BASE_URL = "https://www.rekrute.com/offres.html?s=1&p=";
-    private static final int MAX_PAGES = 4;
+    private static final int MAX_PAGES = 10;
 
     public void scrape() {
         JsonArray jobsArray = new JsonArray();

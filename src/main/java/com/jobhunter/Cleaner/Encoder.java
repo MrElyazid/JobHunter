@@ -30,8 +30,8 @@ public class Encoder {
 
     private static String fixSpecialCharacters(String content) {
         // Replace problematic characters with correct ones
-        return content.replace("é", "e") // Example replacement
-                      .replace("è", "e") // Add more replacements as needed
+        return content.replace("é", "e")
+                      .replace("è", "e")
                       .replace("ê", "e");
     }
 }
