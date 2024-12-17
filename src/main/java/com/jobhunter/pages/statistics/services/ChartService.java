@@ -144,7 +144,15 @@ public class ChartService {
 
     public static ChartPanel createTopSkillsChart() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        // TODO: Implement with DatabaseQueryService.getTopSkills()
+        try {
+            ResultSet rs = DatabaseQueryService.getTopSkills();
+            while (rs.next()) {
+                dataset.addValue(rs.getInt("count"), "Demand", rs.getString("skill"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         return new ChartPanel(ChartFactory.createBarChart(
             "Top Required Skills",
             "Skill",
@@ -155,33 +163,73 @@ public class ChartService {
 
     public static ChartPanel createSkillsBySectorChart() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        // TODO: Implement with DatabaseQueryService.getSkillsBySector()
+        try {
+            ResultSet rs = DatabaseQueryService.getSkillsBySector();
+            while (rs.next()) {
+                dataset.addValue(
+                    rs.getDouble("percentage"),
+                    rs.getString("sector"),
+                    rs.getString("skill")
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         return new ChartPanel(ChartFactory.createBarChart(
             "Skills Distribution by Sector",
-            "Sector",
-            "Number of Jobs",
+            "Skill",
+            "Percentage of Jobs (%)",
             dataset
         ));
     }
 
     public static ChartPanel createTrendingSkillsChart() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        // TODO: Implement with DatabaseQueryService.getTrendingSkills()
+        try {
+            ResultSet rs = DatabaseQueryService.getTrendingSkills();
+            while (rs.next()) {
+                dataset.addValue(
+                    rs.getInt("demand_count"),
+                    "Demand",
+                    rs.getString("skill")
+                );
+                dataset.addValue(
+                    rs.getDouble("avg_salary") / 1000, // Convert to thousands for better visualization
+                    "Avg Salary (K MAD)",
+                    rs.getString("skill")
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         return new ChartPanel(ChartFactory.createLineChart(
-            "Trending Skills Over Time",
-            "Time Period",
-            "Demand (Job Count)",
+            "Trending Skills (Demand vs Salary)",
+            "Skills",
+            "Demand (Jobs) / Salary (K MAD)",
             dataset
         ));
     }
 
     public static ChartPanel createJobTrendsChart() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        // TODO: Implement with DatabaseQueryService.getJobTrends()
+        try {
+            ResultSet rs = DatabaseQueryService.getJobTrends();
+            while (rs.next()) {
+                String sector = rs.getString("sector");
+                dataset.addValue(rs.getInt("job_count"), "Job Count", sector);
+                dataset.addValue(rs.getDouble("remote_percentage"), "Remote %", sector);
+                dataset.addValue(rs.getDouble("foreign_percentage"), "Foreign %", sector);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         return new ChartPanel(ChartFactory.createLineChart(
-            "Job Postings Over Time",
-            "Time Period",
-            "Number of Jobs Posted",
+            "Job Market Trends by Sector",
+            "Sector",
+            "Count / Percentage",
             dataset
         ));
     }

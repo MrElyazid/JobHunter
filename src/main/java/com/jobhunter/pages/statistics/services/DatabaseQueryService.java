@@ -142,17 +142,13 @@ public class DatabaseQueryService {
     public static ResultSet getTopSkills() throws SQLException {
         Statement stmt = getConnection().createStatement();
         return stmt.executeQuery(
-            "WITH RECURSIVE skill_counts AS (" +
-            "  SELECT JSON_UNQUOTE(JSON_EXTRACT(value, '$')) as skill " +
-            "  FROM job_post " +
-            "  CROSS JOIN JSON_TABLE(hard_skills, '$[*]' COLUMNS (value JSON PATH '$')) as skills " +
+            "SELECT skill, COUNT(*) as count FROM (" +
+            "  SELECT JSON_UNQUOTE(JSON_EXTRACT(hard_skills, '$[*]')) as skill FROM job_post " +
+            "  WHERE hard_skills IS NOT NULL " +
             "  UNION ALL " +
-            "  SELECT JSON_UNQUOTE(JSON_EXTRACT(value, '$')) as skill " +
-            "  FROM job_post " +
-            "  CROSS JOIN JSON_TABLE(soft_skills, '$[*]' COLUMNS (value JSON PATH '$')) as skills " +
-            ") " +
-            "SELECT skill, COUNT(*) as count " +
-            "FROM skill_counts " +
+            "  SELECT JSON_UNQUOTE(JSON_EXTRACT(soft_skills, '$[*]')) as skill FROM job_post " +
+            "  WHERE soft_skills IS NOT NULL" +
+            ") skills " +
             "WHERE skill IS NOT NULL " +
             "GROUP BY skill " +
             "ORDER BY count DESC " +
@@ -163,27 +159,30 @@ public class DatabaseQueryService {
     public static ResultSet getSkillsBySector() throws SQLException {
         Statement stmt = getConnection().createStatement();
         return stmt.executeQuery(
-            "WITH RECURSIVE skill_by_sector AS (" +
-            "  SELECT " +
-            "    sector, " +
-            "    JSON_UNQUOTE(JSON_EXTRACT(value, '$')) as skill " +
-            "  FROM job_post " +
-            "  CROSS JOIN JSON_TABLE(hard_skills, '$[*]' COLUMNS (value JSON PATH '$')) as skills " +
-            "  WHERE sector IS NOT NULL " +
-            "  UNION ALL " +
-            "  SELECT " +
-            "    sector, " +
-            "    JSON_UNQUOTE(JSON_EXTRACT(value, '$')) as skill " +
-            "  FROM job_post " +
-            "  CROSS JOIN JSON_TABLE(soft_skills, '$[*]' COLUMNS (value JSON PATH '$')) as skills " +
-            "  WHERE sector IS NOT NULL " +
-            ") " +
             "SELECT " +
             "  sector, " +
             "  skill, " +
             "  COUNT(*) as count, " +
-            "  ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (PARTITION BY sector), 1) as percentage " +
-            "FROM skill_by_sector " +
+            "  ROUND(COUNT(*) * 100.0 / sector_total.total, 1) as percentage " +
+            "FROM (" +
+            "  SELECT " +
+            "    sector, " +
+            "    JSON_UNQUOTE(JSON_EXTRACT(hard_skills, '$[*]')) as skill " +
+            "  FROM job_post " +
+            "  WHERE sector IS NOT NULL AND hard_skills IS NOT NULL " +
+            "  UNION ALL " +
+            "  SELECT " +
+            "    sector, " +
+            "    JSON_UNQUOTE(JSON_EXTRACT(soft_skills, '$[*]')) as skill " +
+            "  FROM job_post " +
+            "  WHERE sector IS NOT NULL AND soft_skills IS NOT NULL " +
+            ") skills " +
+            "JOIN (" +
+            "  SELECT sector, COUNT(*) as total " +
+            "  FROM job_post " +
+            "  WHERE sector IS NOT NULL " +
+            "  GROUP BY sector" +
+            ") sector_total ON skills.sector = sector_total.sector " +
             "WHERE skill IS NOT NULL " +
             "GROUP BY sector, skill " +
             "HAVING count >= 5 " +
@@ -194,26 +193,23 @@ public class DatabaseQueryService {
     public static ResultSet getTrendingSkills() throws SQLException {
         Statement stmt = getConnection().createStatement();
         return stmt.executeQuery(
-            "WITH RECURSIVE recent_skills AS (" +
-            "  SELECT " +
-            "    JSON_UNQUOTE(JSON_EXTRACT(value, '$')) as skill, " +
-            "    min_salary " +
-            "  FROM job_post " +
-            "  CROSS JOIN JSON_TABLE(hard_skills, '$[*]' COLUMNS (value JSON PATH '$')) as skills " +
-            "  WHERE min_salary > 0 " +
-            "  UNION ALL " +
-            "  SELECT " +
-            "    JSON_UNQUOTE(JSON_EXTRACT(value, '$')) as skill, " +
-            "    min_salary " +
-            "  FROM job_post " +
-            "  CROSS JOIN JSON_TABLE(soft_skills, '$[*]' COLUMNS (value JSON PATH '$')) as skills " +
-            "  WHERE min_salary > 0 " +
-            ") " +
             "SELECT " +
             "  skill, " +
             "  COUNT(*) as demand_count, " +
             "  ROUND(AVG(min_salary), 0) as avg_salary " +
-            "FROM recent_skills " +
+            "FROM (" +
+            "  SELECT " +
+            "    JSON_UNQUOTE(JSON_EXTRACT(hard_skills, '$[*]')) as skill, " +
+            "    min_salary " +
+            "  FROM job_post " +
+            "  WHERE hard_skills IS NOT NULL AND min_salary > 0 " +
+            "  UNION ALL " +
+            "  SELECT " +
+            "    JSON_UNQUOTE(JSON_EXTRACT(soft_skills, '$[*]')) as skill, " +
+            "    min_salary " +
+            "  FROM job_post " +
+            "  WHERE soft_skills IS NOT NULL AND min_salary > 0 " +
+            ") skills " +
             "WHERE skill IS NOT NULL " +
             "GROUP BY skill " +
             "HAVING COUNT(*) >= 5 " +
