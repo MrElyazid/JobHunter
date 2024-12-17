@@ -2,22 +2,27 @@ package com.jobhunter.pages.refreshDb;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.HashMap;
-import java.util.Map;
-import com.jobhunter.LinksScraper.*;
-import com.jobhunter.DataScraper.*;
-import com.jobhunter.Cleaner.CleanLLM;
-import com.jobhunter.database.InsertJson;
+import java.util.ArrayList;
+import java.util.List;
+import com.jobhunter.pages.refreshDb.models.ScrapingSite;
+import com.jobhunter.pages.refreshDb.services.ScrapingService;
+import com.jobhunter.pages.main.MainPage;
 
 public class RefreshDbPage {
     private JFrame frame;
     private JTextArea logArea;
     private JButton startButton;
     private JButton backButton;
-    private Map<String, JCheckBox> siteCheckboxes;
+    private List<JCheckBox> siteCheckboxes;
     private JProgressBar progressBar;
+    private final ScrapingService scrapingService;
 
     public RefreshDbPage() {
+        siteCheckboxes = new ArrayList<>();
+        scrapingService = new ScrapingService(
+            this::updateLog,  // Log callback
+            this::updateProgress  // Progress callback
+        );
         initialize();
     }
 
@@ -32,7 +37,7 @@ public class RefreshDbPage {
         backButton = new JButton("← Back");
         backButton.addActionListener(e -> {
             frame.dispose();
-            // TODO: Navigate back to main page
+            MainPage.getInstance().show();
         });
         topPanel.add(backButton);
         
@@ -50,14 +55,13 @@ public class RefreshDbPage {
         JPanel sitePanel = new JPanel(new GridLayout(0, 2, 5, 5));
         sitePanel.setBorder(BorderFactory.createTitledBorder("Select Sites to Scrape"));
         
-        siteCheckboxes = new HashMap<>();
         String[] sites = {"Rekrute", "Anapec", "EmploiMa", "KhdmaMa", 
                          "MarocAnnonces", "MonCallCenter", "StagairesMa"};
         
         for (String site : sites) {
             JCheckBox checkbox = new JCheckBox(site);
             checkbox.setSelected(true);
-            siteCheckboxes.put(site, checkbox);
+            siteCheckboxes.add(checkbox);
             sitePanel.add(checkbox);
         }
 
@@ -96,43 +100,26 @@ public class RefreshDbPage {
         progressBar.setValue(0);
         logArea.setText("");
         
+        // Create a list of selected sites
+        List<ScrapingSite> selectedSites = new ArrayList<>();
+        for (JCheckBox checkbox : siteCheckboxes) {
+            selectedSites.add(new ScrapingSite(checkbox.getText(), checkbox.isSelected()));
+        }
+        
         // Create a background thread for the refresh process
         new Thread(() -> {
             try {
-                // Step 1: Links Scraping
-                updateLog("Starting links scraping process...");
-                progressBar.setValue(10);
-                
-                for (Map.Entry<String, JCheckBox> entry : siteCheckboxes.entrySet()) {
-                    if (entry.getValue().isSelected()) {
-                        updateLog("Scraping links from " + entry.getKey() + "...");
-                        // TODO: Call appropriate scraper based on site name
-                    }
-                }
-                
-                // Step 2: Data Scraping
-                updateLog("\nStarting data scraping process...");
-                progressBar.setValue(40);
-                // TODO: Implement data scraping for selected sites
-                
-                // Step 3: Data Cleaning
-                updateLog("\nCleaning scraped data...");
-                progressBar.setValue(70);
-                // TODO: Call CleanLLM
-                
-                // Step 4: Database Update
-                updateLog("\nUpdating database...");
-                progressBar.setValue(90);
-                // TODO: Call InsertJson
-                
-                progressBar.setValue(100);
-                updateLog("\nDatabase refresh completed successfully!");
-                
+                scrapingService.startScraping(selectedSites);
             } catch (Exception e) {
-                updateLog("\nError during refresh: " + e.getMessage());
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(frame,
+                        "Error during refresh: " + e.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                });
                 e.printStackTrace();
             } finally {
-                startButton.setEnabled(true);
+                SwingUtilities.invokeLater(() -> startButton.setEnabled(true));
             }
         }).start();
     }
@@ -142,6 +129,10 @@ public class RefreshDbPage {
             logArea.append(message + "\n");
             logArea.setCaretPosition(logArea.getDocument().getLength());
         });
+    }
+
+    private void updateProgress(int value) {
+        SwingUtilities.invokeLater(() -> progressBar.setValue(value));
     }
 
     public void show() {

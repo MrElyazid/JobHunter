@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
 import com.jobhunter.util.DatabaseConnection;
+import com.jobhunter.pages.main.MainPage;
 
 public class ChatbotPage {
     private JFrame frame;
@@ -28,7 +29,7 @@ public class ChatbotPage {
         backButton = new JButton("← Back");
         backButton.addActionListener(e -> {
             frame.dispose();
-            // TODO: Navigate back to main page
+            MainPage.getInstance().show();
         });
         topPanel.add(backButton);
         

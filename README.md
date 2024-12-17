@@ -18,7 +18,7 @@ JobHunter is a sophisticated Java application designed to scrape, analyze, and p
   - Detailed information extraction from individual job posts
 
 ### 2. Intelligent Data Cleaning
-- Advanced data cleaning pipeline using GPT-4:
+- Advanced data cleaning pipeline using GPT-4o-mini:
   - Structures raw scraped data into a consistent format
   - Extracts key information like skills, salary, and requirements
   - Handles special characters and encoding issues
@@ -60,7 +60,7 @@ The application features a modern graphical interface with four main sections:
 
 ### Architecture
 - **Scraping Module**: Java-based scrapers using JSoup for HTML parsing
-- **Data Processing**: Two-phase cleaning system with GPT-4 integration
+- **Data Processing**: Two-phase cleaning system with GPT-4o-mini integration
 - **Database**: SQL database with comprehensive schema
 - **GUI**: Swing-based user interface with modern design
 
@@ -77,7 +77,7 @@ The application features a modern graphical interface with four main sections:
    - Handles different website structures and formats
 
 3. **Data Cleaning**
-   - `Cleaner.java`: GPT-4 powered data structuring
+   - `Cleaner.java`: GPT-4o-mini powered data structuring
    - `CleanLLM.java`: JSON formatting and validation
    - Ensures data consistency and quality
 
@@ -92,7 +92,7 @@ The application features a modern graphical interface with four main sections:
 - Java Development Kit (JDK)
 - MySQL Database
 - Maven for dependency management
-- OpenAI API key for GPT-4 integration
+- OpenAI API key for GPT-4o-mini integration
 
 ### Installation
 1. Clone the repository
@@ -120,11 +120,3 @@ The application uses a structured database with the following key fields:
 - `contract_type`: Employment contract type
 - `min_experience`: Required years of experience
 - `diploma`: Educational requirements
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit pull requests, report bugs, or suggest features.
-
-## License
-
-© 2023 JobHunter - All Rights Reserved
