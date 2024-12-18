@@ -4,8 +4,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -128,6 +126,9 @@ public class CleanLLM {
                     // Process all string values in the JSON object to normalize special characters
                     jobOffer = (JSONObject) processJsonValue(jobOffer);
                     
+                    // Ensure all fields are present and in the correct format
+                    ensureFieldsPresent(jobOffer);
+                    
                     // Add to cleaned database
                     cleanedDatabase.put(jobOffer);
                     
@@ -146,6 +147,100 @@ public class CleanLLM {
         } catch (Exception e) {
             System.err.println("Error cleaning database: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Ensures all required fields are present in the job offer JSON object
+     * and converts them to the correct data type if necessary.
+     */
+    private static void ensureFieldsPresent(JSONObject jobOffer) {
+        // Ensure string fields
+        ensureStringField(jobOffer, "location");
+        ensureStringField(jobOffer, "sector");
+        ensureStringField(jobOffer, "job_description");
+        ensureStringField(jobOffer, "company");
+        ensureStringField(jobOffer, "company_description");
+        ensureStringField(jobOffer, "contract_type");
+        ensureStringField(jobOffer, "source");
+        ensureStringField(jobOffer, "link");
+        ensureStringField(jobOffer, "title");
+        ensureStringField(jobOffer, "company_address");
+        ensureStringField(jobOffer, "company_website");
+        ensureStringField(jobOffer, "region");
+        ensureStringField(jobOffer, "desired_profile");
+        ensureStringField(jobOffer, "personality_traits");
+        ensureStringField(jobOffer, "languages");
+        ensureStringField(jobOffer, "language_proficiency");
+        ensureStringField(jobOffer, "recommended_skills");
+        ensureStringField(jobOffer, "job");
+
+        // Ensure numeric fields
+        ensureNumericField(jobOffer, "min_salary");
+        ensureNumericField(jobOffer, "min_experience");
+
+        // Ensure boolean fields
+        ensureBooleanField(jobOffer, "is_remote");
+        ensureBooleanField(jobOffer, "foreign_company");
+        ensureBooleanField(jobOffer, "is_internship");
+
+        // Ensure date fields
+        ensureDateField(jobOffer, "application_date");
+        ensureDateField(jobOffer, "date_of_publication");
+
+        // Ensure array fields
+        ensureArrayField(jobOffer, "hard_skills");
+        ensureArrayField(jobOffer, "soft_skills");
+        ensureArrayField(jobOffer, "diploma");
+    }
+
+    private static void ensureStringField(JSONObject jobOffer, String fieldName) {
+        if (!jobOffer.has(fieldName) || jobOffer.isNull(fieldName)) {
+            jobOffer.put(fieldName, "");
+        } else {
+            jobOffer.put(fieldName, jobOffer.getString(fieldName));
+        }
+    }
+
+    private static void ensureNumericField(JSONObject jobOffer, String fieldName) {
+        if (!jobOffer.has(fieldName) || jobOffer.isNull(fieldName)) {
+            jobOffer.put(fieldName, 0);
+        } else {
+            try {
+                jobOffer.put(fieldName, jobOffer.getNumber(fieldName));
+            } catch (Exception e) {
+                jobOffer.put(fieldName, 0);
+            }
+        }
+    }
+
+    private static void ensureBooleanField(JSONObject jobOffer, String fieldName) {
+        if (!jobOffer.has(fieldName) || jobOffer.isNull(fieldName)) {
+            jobOffer.put(fieldName, false);
+        } else {
+            jobOffer.put(fieldName, jobOffer.getBoolean(fieldName));
+        }
+    }
+
+    private static void ensureDateField(JSONObject jobOffer, String fieldName) {
+        if (!jobOffer.has(fieldName) || jobOffer.isNull(fieldName)) {
+            jobOffer.put(fieldName, "");
+        } else {
+            // Assuming the date is already in the correct format (YYYY-MM-DD)
+            jobOffer.put(fieldName, jobOffer.getString(fieldName));
+        }
+    }
+
+    private static void ensureArrayField(JSONObject jobOffer, String fieldName) {
+        if (!jobOffer.has(fieldName) || jobOffer.isNull(fieldName)) {
+            jobOffer.put(fieldName, new JSONArray());
+        } else {
+            // Ensure it's a JSONArray
+            try {
+                jobOffer.getJSONArray(fieldName);
+            } catch (Exception e) {
+                jobOffer.put(fieldName, new JSONArray());
+            }
         }
     }
 }

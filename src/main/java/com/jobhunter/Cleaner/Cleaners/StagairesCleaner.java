@@ -1,0 +1,14 @@
+package com.jobhunter.Cleaner.Cleaners;
+
+public class StagairesCleaner {
+    
+}
+
+
+// An example of a json item from lastScrappe/StagairesData that we should use to extract fields :
+
+/* 
+
+{"title":"Stage � technicien 3Diste ou architecte d�int�rieur","link":"https://www.stagiaires.ma/offres-de-stages-et-premier-emploi-maroc/538144-stage-technicien-3diste-ou-architecte-dinterieur","company":"LF ARCHITECTURE","location":"T�mara","contract_type":"Stage","work_mode":"Sur site","job_description":"En tant que stagiaire Designer 2D/3D, vous serez amen�(e) � travailler sur une vari�t� de projets cr�atifs et stimulants. Voici les missions qui vous attendent : Concevoir des mod�les 2D et 3D en utilisant des logiciels tels que SketchUp, Lumion, et 3ds Max. Participer � la cr�ation de rendus r�alistes pour des projets divers, en veillant � respecter les besoins et attentes des clients. Collaborer avec l��quipe sur des concepts innovants et des pr�sentations visuelles de haute qualit�. Assister � la mise en place de maquettes num�riques et physiques, tout en contribuant activement � la conception de chaque projet. Participer � la recherche de nouvelles id�es et solutions cr�atives pour enrichir nos projets. Profil recherch� : Nous recherchons un(e) �tudiant(e) passionn�(e) par le design, dot�(e) d�une cr�ativit� et d�un sens du d�tail aiguis�s. Vous devez avoir la capacit� de travailler de mani�re autonome tout en respectant les d�lais impartis. Une connaissance de la suite Adobe (notamment Photoshop) serait un plus.","profile_requirements":"En tant que stagiaire Designer 2D/3D, vous serez amen�(e) � travailler sur une vari�t� de projets cr�atifs et stimulants. Voici les missions qui vous attendent : Concevoir des mod�les 2D et 3D en utilisant des logiciels tels que SketchUp, Lumion, et 3ds Max. Participer � la cr�ation de rendus r�alistes pour des projets divers, en veillant � respecter les besoins et attentes des clients. Collaborer avec l��quipe sur des concepts innovants et des pr�sentations visuelles de haute qualit�. Assister � la mise en place de maquettes num�riques et physiques, tout en contribuant activement � la conception de chaque projet. Participer � la recherche de nouvelles id�es et solutions cr�atives pour enrichir nos projets. Profil recherch� : Nous recherchons un(e) �tudiant(e) passionn�(e) par le design, dot�(e) d�une cr�ativit� et d�un sens du d�tail aiguis�s. Vous devez avoir la capacit� de travailler de mani�re autonome tout en respectant les d�lais impartis. Une connaissance de la suite Adobe (notamment Photoshop) serait un plus.","benefits":"No benefits available"}
+
+*/

@@ -1,0 +1,14 @@
+{
+  "contract_types": [
+    "CDI",
+    "CDD",
+    "Freelance",
+    "Stage",
+    "Intérim",
+    "Apprentissage",
+    "Temps partiel",
+    "Temps plein",
+    "Contrat de professionnalisation",
+    "Contrat saisonnier"
+  ]
+}

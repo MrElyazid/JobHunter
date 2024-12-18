@@ -1,0 +1,23 @@
+{
+  "diploma_types": [
+    "Bac",
+    "Bac+2",
+    "Bac+3",
+    "Bac+4",
+    "Bac+5",
+    "Licence",
+    "Master",
+    "Doctorat",
+    "BTS",
+    "DUT",
+    "DEUG",
+    "DEUST",
+    "Ingénieur",
+    "MBA",
+    "CAP",
+    "BEP",
+    "Brevet professionnel",
+    "Diplôme d'État",
+    "Certificat de spécialisation"
+  ]
+}
