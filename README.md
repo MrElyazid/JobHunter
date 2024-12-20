@@ -1,11 +1,11 @@
 # JobHunter - Moroccan Job Market Analysis Tool
 
-JobHunter is a sophisticated Java application designed to scrape, analyze, and provide insights into the Moroccan job market. It combines web scraping, data cleaning, machine learning, and a user-friendly GUI to help users explore job opportunities and understand market trends.
+JobHunter is a sophisticated Java-based application designed to analyze the Moroccan job market through web scraping, data processing, and advanced analytics. It provides comprehensive insights into job opportunities, market trends, and career analytics through an intuitive graphical interface.
 
-## Features
+## Core Features
 
 ### 1. Multi-Source Job Scraping
-- Scrapes job listings from major Moroccan job portals:
+- Automated scraping from major Moroccan job portals:
   - Rekrute
   - Anapec
   - EmploiMa
@@ -13,127 +13,143 @@ JobHunter is a sophisticated Java application designed to scrape, analyze, and p
   - MarocAnnonces
   - MonCallCenter
   - StagairesMa
-- Two-phase scraping process:
-  - Links collection from job listing pages
-  - Detailed information extraction from individual job posts
+- Two-phase scraping architecture:
+  - Links collection (LinksScraper): Efficiently gathers job posting URLs
+  - Detailed data extraction (DataScraper): Extracts comprehensive job information
 
-### 2. Intelligent Data Cleaning
-- Two advanced data cleaning pipelines:
-  1. GPT-4o-mini powered cleaning:
-     - Structures raw scraped data into a consistent format
-     - Extracts key information like skills, salary, and requirements
-     - Handles special characters and encoding issues
-     - Normalizes data fields for consistency
-  2. RegEx-based cleaning with dictionary support:
-     - Implements site-specific cleaners for each job portal
-     - Extracts and structures data using regex patterns and string manipulation
-     - Utilizes dictionary files for consistent extraction of skills, regions, and other key information
-     - Ensures consistency across different data sources
-- Secondary cleaning phase for JSON formatting and validation
+### 2. Advanced Data Processing Pipeline
+- Dual cleaning approach for optimal data quality:
+  1. AI-Powered Cleaning (Cleaner.java):
+     - Uses OpenRouter API for intelligent data structuring and cleaning using GPT-4o-mini.
+     - Extracts and normalizes key job information
+     - Handles multilingual content (French/Arabic/English)
+     - Standardizes data format and encoding
+  2. RegEx-Based Cleaning (RegExCleaner.java):
+     - Site-specific cleaners for each job portal
+     - Pattern-based data extraction
+     - Dictionary-supported field normalization
+     - Robust error handling and validation
 
-### 3. Structured Database Storage
-- Organized SQL database schema for job listings
-- Stores comprehensive job information including:
-  - Location, sector, and region
+### 3. Comprehensive Database Integration
+- Structured MySQL database schema
+- Rich job information storage including:
+  - Job details (title, description, requirements)
+  - Company information
+  - Location and sector data
   - Salary and experience requirements
-  - Required skills (both hard and soft)
-  - Company information and description
-  - Contract details
+  - Skills (technical and soft)
   - Educational requirements
-  - Job title and description
-  - Application and publication dates
+  - Contract details
   - Language requirements
-  - Personality traits and desired profile
+  - Application deadlines
+- Efficient batch processing and data validation
 
-### 4. User-Friendly GUI
-The application features a modern graphical interface with four main sections:
+### 4. Modern GUI Interface
+The application features a user-friendly interface with five main sections:
 
-1. **Database Refresh**
-   - Manual trigger for scraping new job listings
-   - Updates database with latest market offerings
+1. **Database Management (refreshDB page)**
+   - Manual and scheduled database updates
+   - Progress tracking for scraping operations
+   - Data validation and error reporting
 
-2. **Job Browser**
-   - Search and filter job listings
-   - View detailed job information
-   - User-friendly interface for exploring opportunities
+2. **Job Browser (browse jobs page)**
+   - Advanced search and filtering capabilities
+   - Detailed job view with formatted information
 
 3. **AI Chatbot**
-   - Intelligent interaction for job market insights
-   - Natural language queries about job trends
+   - Interactive job market analysis
+   - Personalized job recommendations
+   - Market trend insights
+   - Career guidance support
 
-4. **Statistics & ML**
-   - Market trend analysis
-   - Visual representation of job market data
-   - Machine learning insights
+4. **Statistics Dashboard**
+   - Interactive market trend visualization
+   - Geographical distribution analysis
+   - Salary range analytics
+   - Skills demand tracking
+   - Company and sector insights
+   - Educational requirement analysis
+   - Language proficiency demands
+   - Contract type distribution
+
+5. **ML Models**
+   - Salary prediction based on job parameters, uses Linear Regression.
+   - Sector prediction model based on job patrameters, uses Decision Tree (J48).
+   - Job Recommendation based on job parameters, uses KNN.
 
 ## Technical Implementation
 
 ### Architecture
-- **Scraping Module**: Java-based scrapers using JSoup for HTML parsing
-- **Data Processing**: 
-  - GPT-4o-mini integration for advanced text processing
-  - RegEx-based cleaning using custom algorithms
-  - Dictionary-based extraction for consistent data cleaning
-- **Database**: SQL database with comprehensive schema
-- **GUI**: Swing-based user interface with modern design
+- **Java 11+ Backend**
+  - Maven for dependency management
+  - Modular design with clear separation of concerns
+  - Robust error handling and logging
+  - Unit Testing with JUNIT.
 
 ### Key Components
+1. **Web Scraping Module**
+   - JSoup for HTML parsing
+   - Selenium WebDriver for dynamic content scraping
+   - Custom scraper implementations for each portal
 
-1. **Links Scraper**
-   - Located in `LinksScraper/` directory
-   - Individual scrapers for each job portal
-   - Collects job posting URLs and basic information
+2. **Data Processing**
+   - OpenRouter AI API integration
+   - Regular expression patterns
+   - JSON-based dictionaries
+   - Custom cleaning algorithms
 
-2. **Data Scraper**
-   - Located in `DataScraper/` directory
-   - Extracts detailed information from individual job posts
-   - Handles different website structures and formats
-
-3. **Data Cleaning**
-   - `Cleaner.java`: GPT-4o-mini powered data structuring
-   - `CleanLLM.java`: JSON formatting and validation
-   - `RegExCleaner.java`: RegEx-based cleaning pipeline
-   - Individual cleaners for each job portal in `Cleaners/` directory
-   - Dictionary files in `resources/dictionary/` for consistent data extraction
-   - Ensures data consistency and quality across different sources
-
-4. **Database Operations**
-   - `InsertJson.java`: Handles database insertions
-   - Proper data type conversion and error handling
+3. **Database Layer**
+   - MySQL database
    - Efficient batch processing
+   - Transaction management
+   - Connection pooling
 
-## Setup and Usage
+4. **User Interface**
+   - Swing-based GUI
+   - Modern design patterns
+   - Responsive layouts
+   - Event-driven architecture
+
+### Libraries and Dependencies
+- JSoup for web scraping
+- Selenium for dynamic content
+- MySQL Connector for database operations
+- JFreeChart for data visualization
+- Weka for machine learning tasks
+- Jackson for JSON processing
+- Logback for logging
+
+## Setup and Configuration
 
 ### Prerequisites
 - Java Development Kit (JDK) 11 or higher
-- MySQL Database
-- Maven for dependency management
-- OpenAI API key for GPT-4o-mini integration
+- MySQL Server 8.0+
+- Maven 3.6+
+- OpenRouter AI API key
 
-### Installation
+### Installation Steps
 1. Clone the repository
 2. Configure database connection in `DatabaseConnection.java`
-3. Set up OpenAI API key in `Cleaner.java`
+3. Set up OpenRouter AI API key in `Cleaner.java`
 4. Run `mvn install` to install dependencies
 
 ### Running the Application
-1. Execute `App.java` to launch the GUI
-2. Use the "Refresh Database" option to perform initial data collection
-3. Explore jobs, insights, and analytics through the interface
+1. Execute `mvn exec:java` to launch the GUI
+2. Use the Database Management section for initial data collection
+3. Navigate through different sections to explore features
 
-## Database Schema
-
-[Database schema section remains unchanged]
-
-## Recent Updates
-
-The project has been updated to include more comprehensive job information and an improved data cleaning pipeline. Key changes include:
-1. Enhanced data extraction in `Cleaner.java` to capture additional job details.
-2. Improved data validation and formatting in `CleanLLM.java`.
-3. `RegExCleaner.java` implemented a more robust RegEx-based cleaning pipeline.
-4. Removed OpenNLP dependencies in favor of custom RegEx patterns and dictionary-based extraction.
-5. Enhanced individual cleaner classes for each job portal to rely more heavily on RegEx and JSON-based dictionaries.
-6. Updated database insertion process in `InsertJson.java` to accommodate the new fields.
-7. Expanded database schema to store more detailed job information.
-
-These updates allow for more nuanced job market analysis and provide users with richer information about each job opportunity. The new RegEx-based cleaning pipeline with dictionary support ensures better consistency and accuracy in data extraction across different job portals.
+## Project Structure
+```
+jobhunter/
+├── src/main/java/com/jobhunter/
+│   ├── LinksScraper/       # URL collection
+│   ├── DataScraper/        # Detailed data extraction
+│   ├── Cleaner/            # Data processing
+│   ├── database/           # Database operations
+│   ├── pages/              # GUI implementation
+│   └── util/               # Utility classes
+├── src/main/resources/
+│   ├── dictionary/         # Data normalization files
+│   └── ML/                 # Machine learning models
+└── src/test/              # Test cases
+```
