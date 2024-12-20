@@ -17,7 +17,7 @@ public class SkillsAnalysisPanel extends JPanel {
         chartsPanel.add(ChartService.createTopSkillsChart());
         
         // Add skills by sector chart
-        chartsPanel.add(ChartService.createSkillsBySectorChart());
+        //chartsPanel.add(ChartService.createSkillsBySectorChart());
 
         add(chartsPanel, BorderLayout.CENTER);
     }

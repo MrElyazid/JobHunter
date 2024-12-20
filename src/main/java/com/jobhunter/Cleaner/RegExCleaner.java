@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class RegExCleaner {
     private static final String LAST_SCRAPPE_DIR = "lastScrappe";
-    private static final String DATABASE_PATH = "database/cleaned_database.json";
+    private static final String DATABASE_PATH = "database/output_database.json";
 
     private final Map<String, JobCleaner> cleaners;
 

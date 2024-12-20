@@ -24,9 +24,15 @@ public class DatabaseQueryService {
     public static String getAverageSalary() {
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT AVG(min_salary) FROM job_post WHERE min_salary > 0")) {
+             ResultSet rs = stmt.executeQuery(
+                 "SELECT AVG(min_salary) " +
+                 "FROM job_post " +
+                 "WHERE min_salary > 0 AND min_salary < 100000")) { // Filter unrealistic values
             if (rs.next()) {
-                return String.format("%,.0f MAD", rs.getDouble(1));
+                double avg = rs.getDouble(1);
+                if (!rs.wasNull() && avg > 0) {
+                    return String.format("%,.0f MAD", avg);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -38,10 +44,11 @@ public class DatabaseQueryService {
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(
-                "SELECT contract_type, COUNT(*) as count " +
-                "FROM job_post " +
-                "GROUP BY contract_type " +
-                "ORDER BY count DESC LIMIT 1")) {
+                 "SELECT COALESCE(contract_type, 'Not Specified') as contract_type, COUNT(*) as count " +
+                 "FROM job_post " +
+                 "WHERE contract_type IS NOT NULL " +
+                 "GROUP BY contract_type " +
+                 "ORDER BY count DESC LIMIT 1")) {
             if (rs.next()) {
                 return rs.getString("contract_type");
             }
@@ -55,10 +62,15 @@ public class DatabaseQueryService {
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(
-                "SELECT (COUNT(CASE WHEN is_remote = true THEN 1 END) * 100.0 / COUNT(*)) " +
-                "FROM job_post")) {
+                 "SELECT (COUNT(CASE WHEN is_remote = true THEN 1 END) * 100.0 / " +
+                 "COUNT(CASE WHEN is_remote IS NOT NULL THEN 1 END)) as remote_percent " +
+                 "FROM job_post " +
+                 "WHERE is_remote IS NOT NULL")) {
             if (rs.next()) {
-                return String.format("%.1f%%", rs.getDouble(1));
+                double percent = rs.getDouble(1);
+                if (!rs.wasNull()) {
+                    return String.format("%.1f%%", percent);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -69,9 +81,10 @@ public class DatabaseQueryService {
     public static ResultSet getContractTypeDistribution() throws SQLException {
         Statement stmt = getConnection().createStatement();
         return stmt.executeQuery(
-            "SELECT contract_type, COUNT(*) as count " +
+            "SELECT COALESCE(contract_type, 'Not Specified') as contract_type, COUNT(*) as count " +
             "FROM job_post " +
             "GROUP BY contract_type " +
+            "HAVING count > 5 " + // Filter out rare contract types
             "ORDER BY count DESC"
         );
     }
@@ -79,62 +92,24 @@ public class DatabaseQueryService {
     public static ResultSet getCompanyTypeDistribution() throws SQLException {
         Statement stmt = getConnection().createStatement();
         return stmt.executeQuery(
-            "SELECT foriegn_company, COUNT(*) as count " +
+            "SELECT COALESCE(foriegn_company, false) as foriegn_company, COUNT(*) as count " +
             "FROM job_post " +
+            "WHERE company IS NOT NULL " + // Only count jobs with known companies
             "GROUP BY foriegn_company"
-        );
-    }
-
-    public static ResultSet getSalaryDistribution() throws SQLException {
-        Statement stmt = getConnection().createStatement();
-        return stmt.executeQuery(
-            "SELECT " +
-            "CASE " +
-            "  WHEN min_salary < 5000 THEN '0-5k' " +
-            "  WHEN min_salary < 10000 THEN '5k-10k' " +
-            "  WHEN min_salary < 15000 THEN '10k-15k' " +
-            "  WHEN min_salary < 20000 THEN '15k-20k' " +
-            "  ELSE '20k+' " +
-            "END as salary_range, " +
-            "COUNT(*) as count " +
-            "FROM job_post " +
-            "WHERE min_salary > 0 " +
-            "GROUP BY salary_range " +
-            "ORDER BY salary_range"
-        );
-    }
-
-    public static ResultSet getSalaryByExperience() throws SQLException {
-        Statement stmt = getConnection().createStatement();
-        return stmt.executeQuery(
-            "SELECT min_experience, AVG(min_salary) as avg_salary " +
-            "FROM job_post " +
-            "WHERE min_salary > 0 " +
-            "GROUP BY min_experience " +
-            "ORDER BY min_experience"
         );
     }
 
     public static ResultSet getJobsByCity() throws SQLException {
         Statement stmt = getConnection().createStatement();
         return stmt.executeQuery(
-            "SELECT location, COUNT(*) as count " +
+            "SELECT COALESCE(location, 'Other') as location, COUNT(*) as count " +
             "FROM job_post " +
+            "WHERE location IS NOT NULL " +
+            "AND location != 'Unknown' " +
+            "AND location != '' " +
             "GROUP BY location " +
+            "HAVING count >= 5 " + // Only show cities with significant job counts
             "ORDER BY count DESC " +
-            "LIMIT 10"
-        );
-    }
-
-    public static ResultSet getSalaryByLocation() throws SQLException {
-        Statement stmt = getConnection().createStatement();
-        return stmt.executeQuery(
-            "SELECT location, AVG(min_salary) as avg_salary " +
-            "FROM job_post " +
-            "WHERE min_salary > 0 " +
-            "GROUP BY location " +
-            "HAVING COUNT(*) > 5 " +
-            "ORDER BY avg_salary DESC " +
             "LIMIT 10"
         );
     }
@@ -142,78 +117,35 @@ public class DatabaseQueryService {
     public static ResultSet getTopSkills() throws SQLException {
         Statement stmt = getConnection().createStatement();
         return stmt.executeQuery(
-            "SELECT skill, COUNT(*) as count FROM (" +
-            "  SELECT JSON_UNQUOTE(JSON_EXTRACT(hard_skills, '$[*]')) as skill FROM job_post " +
-            "  WHERE hard_skills IS NOT NULL " +
+            "WITH RECURSIVE extracted_skills AS ( " +
+            "  SELECT JSON_UNQUOTE(skill) as skill " +
+            "  FROM job_post " +
+            "  CROSS JOIN JSON_TABLE( " +
+            "    CASE " +
+            "      WHEN hard_skills != '[]' AND hard_skills IS NOT NULL THEN hard_skills " +
+            "      ELSE '[\"\"]' " +
+            "    END, " +
+            "    '$[*]' COLUMNS (skill VARCHAR(255) PATH '$') " +
+            "  ) skills " +
+            "  WHERE hard_skills != '[]' AND hard_skills IS NOT NULL " +
             "  UNION ALL " +
-            "  SELECT JSON_UNQUOTE(JSON_EXTRACT(soft_skills, '$[*]')) as skill FROM job_post " +
-            "  WHERE soft_skills IS NOT NULL" +
-            ") skills " +
-            "WHERE skill IS NOT NULL " +
+            "  SELECT JSON_UNQUOTE(skill) as skill " +
+            "  FROM job_post " +
+            "  CROSS JOIN JSON_TABLE( " +
+            "    CASE " +
+            "      WHEN soft_skills != '[]' AND soft_skills IS NOT NULL THEN soft_skills " +
+            "      ELSE '[\"\"]' " +
+            "    END, " +
+            "    '$[*]' COLUMNS (skill VARCHAR(255) PATH '$') " +
+            "  ) skills " +
+            "  WHERE soft_skills != '[]' AND soft_skills IS NOT NULL " +
+            ") " +
+            "SELECT skill, COUNT(*) as count " +
+            "FROM extracted_skills " +
+            "WHERE skill != '' " +
             "GROUP BY skill " +
+            "HAVING count >= 3 " + // Only show skills that appear multiple times
             "ORDER BY count DESC " +
-            "LIMIT 15"
-        );
-    }
-
-    public static ResultSet getSkillsBySector() throws SQLException {
-        Statement stmt = getConnection().createStatement();
-        return stmt.executeQuery(
-            "SELECT " +
-            "  sector, " +
-            "  skill, " +
-            "  COUNT(*) as count, " +
-            "  ROUND(COUNT(*) * 100.0 / sector_total.total, 1) as percentage " +
-            "FROM (" +
-            "  SELECT " +
-            "    sector, " +
-            "    JSON_UNQUOTE(JSON_EXTRACT(hard_skills, '$[*]')) as skill " +
-            "  FROM job_post " +
-            "  WHERE sector IS NOT NULL AND hard_skills IS NOT NULL " +
-            "  UNION ALL " +
-            "  SELECT " +
-            "    sector, " +
-            "    JSON_UNQUOTE(JSON_EXTRACT(soft_skills, '$[*]')) as skill " +
-            "  FROM job_post " +
-            "  WHERE sector IS NOT NULL AND soft_skills IS NOT NULL " +
-            ") skills " +
-            "JOIN (" +
-            "  SELECT sector, COUNT(*) as total " +
-            "  FROM job_post " +
-            "  WHERE sector IS NOT NULL " +
-            "  GROUP BY sector" +
-            ") sector_total ON skills.sector = sector_total.sector " +
-            "WHERE skill IS NOT NULL " +
-            "GROUP BY sector, skill " +
-            "HAVING count >= 5 " +
-            "ORDER BY sector, count DESC"
-        );
-    }
-
-    public static ResultSet getTrendingSkills() throws SQLException {
-        Statement stmt = getConnection().createStatement();
-        return stmt.executeQuery(
-            "SELECT " +
-            "  skill, " +
-            "  COUNT(*) as demand_count, " +
-            "  ROUND(AVG(min_salary), 0) as avg_salary " +
-            "FROM (" +
-            "  SELECT " +
-            "    JSON_UNQUOTE(JSON_EXTRACT(hard_skills, '$[*]')) as skill, " +
-            "    min_salary " +
-            "  FROM job_post " +
-            "  WHERE hard_skills IS NOT NULL AND min_salary > 0 " +
-            "  UNION ALL " +
-            "  SELECT " +
-            "    JSON_UNQUOTE(JSON_EXTRACT(soft_skills, '$[*]')) as skill, " +
-            "    min_salary " +
-            "  FROM job_post " +
-            "  WHERE soft_skills IS NOT NULL AND min_salary > 0 " +
-            ") skills " +
-            "WHERE skill IS NOT NULL " +
-            "GROUP BY skill " +
-            "HAVING COUNT(*) >= 5 " +
-            "ORDER BY (COUNT(*) * AVG(min_salary)) DESC " +
             "LIMIT 10"
         );
     }
@@ -222,16 +154,16 @@ public class DatabaseQueryService {
         Statement stmt = getConnection().createStatement();
         return stmt.executeQuery(
             "SELECT " +
-            "  sector, " +
+            "  COALESCE(sector, 'Other') as sector, " +
             "  COUNT(*) as job_count, " +
-            "  ROUND(AVG(CASE WHEN min_salary > 0 THEN min_salary END), 0) as avg_salary, " +
-            "  ROUND(COUNT(CASE WHEN is_remote = true THEN 1 END) * 100.0 / COUNT(*), 1) as remote_percentage, " +
-            "  ROUND(COUNT(CASE WHEN foriegn_company = true THEN 1 END) * 100.0 / COUNT(*), 1) as foreign_percentage " +
+            "  ROUND(COUNT(CASE WHEN is_remote = true THEN 1 END) * 100.0 / COUNT(*), 1) as remote_percentage " +
             "FROM job_post " +
             "WHERE sector IS NOT NULL " +
+            "AND sector != '' " +
             "GROUP BY sector " +
-            "HAVING job_count >= 5 " +
-            "ORDER BY job_count DESC"
+            "HAVING job_count >= 5 " + // Only show sectors with significant job counts
+            "ORDER BY job_count DESC " +
+            "LIMIT 8" // Limit to top sectors for better visualization
         );
     }
 }

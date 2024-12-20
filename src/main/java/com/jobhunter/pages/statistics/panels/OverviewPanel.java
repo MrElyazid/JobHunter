@@ -2,10 +2,6 @@ package com.jobhunter.pages.statistics.panels;
 
 import javax.swing.*;
 import java.awt.*;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.JFreeChart;
-import org.jfree.data.general.DefaultPieDataset;
 import com.jobhunter.pages.statistics.services.DatabaseQueryService;
 import com.jobhunter.pages.statistics.services.ChartService;
 

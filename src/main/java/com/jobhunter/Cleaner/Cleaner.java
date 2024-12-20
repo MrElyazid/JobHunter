@@ -56,7 +56,7 @@ public class Cleaner {
                         System.out.println("Processing job offer from file: " + jsonFile.getName());
                         
                         String apiUrl = "https://openrouter.ai/api/v1/chat/completions";
-                        String apiKey = "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";
+                        String apiKey = "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";
 
                         Map<String, Object> body = new HashMap<>();
                         body.put("model", "openai/gpt-4o-mini-2024-07-18");
@@ -85,14 +85,14 @@ public class Cleaner {
                             "Business Process Outsourcing (BPO)"
                         }));
                         properties.put("job_description", Map.of("type", "string", "description", "A concise summary of the job description"));
-                        properties.put("min_salary", Map.of("type", "number", "description", "Minimum salary in Moroccan dirhams (dh)"));
+                        properties.put("min_salary", Map.of("type", "integer", "description", "Minimum salary in Moroccan dirhams (dh)"));
                         properties.put("is_remote", Map.of("type", "boolean", "description", "Boolean indicating if the job is remote"));
-                        properties.put("hard_skills", Map.of("type", "array", "items", Map.of("type", "string"), "description", "List of hard skills required for the job"));
                         properties.put("soft_skills", Map.of("type", "array", "items", Map.of("type", "string"), "description", "List of soft skills required for the job"));
+                        properties.put("hard_skills", Map.of("type", "array", "items", Map.of("type", "string"), "description", "List of hard skills required for the job"));
                         properties.put("company", Map.of("type", "string", "description", "Name of the hiring company or recruiter"));
-                        properties.put("foreign_company", Map.of("type", "boolean", "description", "Boolean indicating if the company is foreign"));
                         properties.put("company_description", Map.of("type", "string", "description", "Summary of the company/recruiter description"));
                         properties.put("contract_type", Map.of("type", "string", "description", "Type of job contract (e.g., CDI, CDD)"));
+                        properties.put("foreign_company", Map.of("type", "boolean", "description", "Boolean indicating if the company is foreign"));
                         properties.put("is_internship", Map.of("type", "boolean", "description", "Boolean indicating if the job is an internship"));
                         properties.put("source", Map.of("type", "string", "description", "Platform where the job was posted", "enum", new String[]{
                             "Khdma", "EmploiMa", "Anapec", "MonCallCenter", "Rekrute", "StagairesMa", "MarocAnnonces"
@@ -100,27 +100,30 @@ public class Cleaner {
                         properties.put("link", Map.of("type", "string", "description", "Link to the job offer"));
                         properties.put("min_experience", Map.of("type", "integer", "description", "Minimum years of experience required"));
                         properties.put("diploma", Map.of("type", "array", "items", Map.of("type", "string"), "description", "Desired diplomas or qualifications"));
-                        properties.put("title", Map.of("type", "string", "description", "Job title"));
-                        properties.put("application_date", Map.of("type", "string", "format", "date", "description", "Date of application"));
-                        properties.put("date_of_publication", Map.of("type", "string", "format", "date", "description", "Date of job posting publication"));
-                        properties.put("company_address", Map.of("type", "string", "description", "Address of the company"));
-                        properties.put("company_website", Map.of("type", "string", "description", "Website of the company"));
-                        properties.put("region", Map.of("type", "string", "description", "Region of the job"));
-                        properties.put("desired_profile", Map.of("type", "string", "description", "Description of the desired candidate profile"));
-                        properties.put("personality_traits", Map.of("type", "string", "description", "Desired personality traits for the job"));
-                        properties.put("languages", Map.of("type", "string", "description", "Required languages for the job"));
-                        properties.put("language_proficiency", Map.of("type", "string", "description", "Required language proficiency levels"));
-                        properties.put("recommended_skills", Map.of("type", "string", "description", "Additional recommended skills for the job"));
-                        properties.put("job", Map.of("type", "string", "description", "Job category or type"));
+
+                        // Adding new fields to match database schema
+                        properties.put("title", Map.of("type", "string", "description", "The job title or position name"));
+                        properties.put("application_date", Map.of("type", "string", "description", "Deadline date for applications in YYYY-MM-DD format"));
+                        properties.put("date_of_publication", Map.of("type", "string", "description", "Date when the job was posted in YYYY-MM-DD format"));
+                        properties.put("company_address", Map.of("type", "string", "description", "Complete address of the company"));
+                        properties.put("company_website", Map.of("type", "string", "description", "Company's official website URL"));
+                        properties.put("region", Map.of("type", "string", "description", "The broader region/area where the job is located"));
+                        properties.put("desired_profile", Map.of("type", "string", "description", "Detailed description of the ideal candidate profile"));
+                        properties.put("personality_traits", Map.of("type", "string", "description", "Required personality characteristics and soft skills"));
+                        properties.put("languages", Map.of("type", "string", "description", "Required languages (e.g., Arabic, French, English)"));
+                        properties.put("language_profeciency", Map.of("type", "string", "description", "Required level of language proficiency (e.g., Fluent, Intermediate)"));
+                        properties.put("recommended_skills", Map.of("type", "string", "description", "Additional recommended or preferred skills"));
+                        properties.put("job", Map.of("type", "string", "description", "General job category or role type"));
 
                         schema.put("properties", properties);
                         // Include all properties in required array
                         schema.put("required", new String[]{
                             "location", "sector", "job_description", "min_salary", "is_remote",
-                            "hard_skills", "soft_skills", "company", "foreign_company", "company_description",
-                            "contract_type", "is_internship", "source", "link", "min_experience", "diploma",
-                            "title", "application_date", "date_of_publication", "company_address", "company_website",
-                            "region", "desired_profile", "personality_traits", "languages", "language_proficiency",
+                            "soft_skills", "hard_skills", "company", "company_description",
+                            "contract_type", "foreign_company", "is_internship", "source",
+                            "link", "min_experience", "diploma", "title", "application_date",
+                            "date_of_publication", "company_address", "company_website", "region",
+                            "desired_profile", "personality_traits", "languages", "language_profeciency",
                             "recommended_skills", "job"
                         });
 

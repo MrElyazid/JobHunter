@@ -15,8 +15,8 @@ public class StatisticsPage {
     }
 
     private void initialize() {
-        frame = new JFrame("Statistics and ML");
-        frame.setBounds(100, 100, 1000, 700);
+        frame = new JFrame("Statistics and Analysis");
+        frame.setBounds(100, 100, 1200, 800);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout(10, 10));
 
@@ -38,12 +38,20 @@ public class StatisticsPage {
         // Create tabbed pane for different statistics
         tabbedPane = new JTabbedPane();
         
-        // Add different statistics tabs
-        tabbedPane.addTab("Overview", new OverviewPanel());
-        tabbedPane.addTab("Salary Analysis", new SalaryAnalysisPanel());
-        tabbedPane.addTab("Skills Analysis", new SkillsAnalysisPanel());
-        tabbedPane.addTab("Location Analysis", new LocationAnalysisPanel());
-        tabbedPane.addTab("Trends", new TrendsPanel());
+        // Market Overview - Shows basic counts and distributions
+        tabbedPane.addTab("Market Overview", new OverviewPanel());
+        
+        // Job Types & Contracts - Contract type distribution
+        tabbedPane.addTab("Job Types", new JobTypesPanel());
+        
+        // Source Analysis - Job posting sources
+        tabbedPane.addTab("Source Analysis", new SourceAnalysisPanel());
+        
+        // Geographic Distribution - City-wise job distribution
+        tabbedPane.addTab("Geographic Analysis", new GeographicAnalysisPanel());
+        
+        // Company Analysis - Local vs Foreign companies
+        tabbedPane.addTab("Company Analysis", new CompanyAnalysisPanel());
 
         frame.add(tabbedPane, BorderLayout.CENTER);
     }

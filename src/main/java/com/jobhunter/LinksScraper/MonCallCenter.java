@@ -12,7 +12,7 @@ import java.io.IOException;
 public class MonCallCenter {
 
     private static final String BASE_URL = "https://www.moncallcenter.ma/offres-emploi/";
-    private static final int MAX_PAGES = 7;
+    private static int MAX_PAGES = 7; // Changed from final to allow modification
 
     public void scrape() {
         JsonArray jobPostsArray = new JsonArray();
@@ -23,6 +23,12 @@ public class MonCallCenter {
                 Document doc = Jsoup.connect(url).get();
                 Elements jobPosts = doc.select("div.offres");
 
+                // If no jobs found on this page, break the loop
+                if (jobPosts.isEmpty()) {
+                    System.out.println("No more jobs found on page " + page + ", stopping pagination");
+                    break;
+                }
+
                 for (Element jobPost : jobPosts) {
                     String jobLink = jobPost.select("div:nth-child(1) > div:nth-child(2) > h2:nth-child(1) > a:nth-child(1)").attr("href");
                     String jobTitle = jobPost.select("div:nth-child(1) > div:nth-child(2) > h2:nth-child(1) > a:nth-child(1)").text();
@@ -31,16 +37,28 @@ public class MonCallCenter {
                     jobJson.addProperty("title", jobTitle);
                     jobJson.addProperty("link", "https://www.moncallcenter.ma" + jobLink);
 
-
                     jobPostsArray.add(jobJson);
                 }
 
+                System.out.println("Processed page " + page + " - Found " + jobPosts.size() + " jobs");
+
             } catch (IOException e) {
-                e.printStackTrace();
+                System.err.println("Error processing page " + page + ": " + e.getMessage());
+                break; // Stop on error to avoid unnecessary requests
             }
         }
 
         JsonUtils.saveJsonToFile(jobPostsArray, "data/MonCallCenterLinks.json");
         System.out.println("MonCallCenter scraping completed. Results saved to data/MonCallCenterLinks.json");
+    }
+
+    // Method to set the maximum number of pages to scrape
+    public static void setMaxPages(int pages) {
+        MAX_PAGES = Math.max(1, Math.min(pages, 50)); // Ensure between 1 and 50 pages
+    }
+
+    public static void main(String[] args) {
+        MonCallCenter scraper = new MonCallCenter();
+        scraper.scrape();
     }
 }

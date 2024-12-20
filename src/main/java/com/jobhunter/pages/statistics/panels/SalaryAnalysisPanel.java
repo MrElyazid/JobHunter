@@ -14,10 +14,10 @@ public class SalaryAnalysisPanel extends JPanel {
         JPanel chartsPanel = new JPanel(new GridLayout(2, 1, 10, 10));
         
         // Add salary distribution chart
-        chartsPanel.add(ChartService.createSalaryDistributionChart());
+        //chartsPanel.add(ChartService.createSalaryDistributionChart());
         
         // Add salary by experience chart
-        chartsPanel.add(ChartService.createSalaryByExperienceChart());
+        //chartsPanel.add(ChartService.createSalaryByExperienceChart());
 
         add(chartsPanel, BorderLayout.CENTER);
     }

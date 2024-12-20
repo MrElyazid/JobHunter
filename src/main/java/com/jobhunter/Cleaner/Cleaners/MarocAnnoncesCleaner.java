@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.text.Normalizer;
 
 public class MarocAnnoncesCleaner implements JobCleaner {
     private JSONArray hardSkills;
@@ -20,6 +21,7 @@ public class MarocAnnoncesCleaner implements JobCleaner {
     private JSONArray sectors;
     private JSONArray contractTypes;
     private JSONArray diplomaTypes;
+    private JSONArray personalityTraits;
 
     public MarocAnnoncesCleaner() {
         try {
@@ -30,6 +32,7 @@ public class MarocAnnoncesCleaner implements JobCleaner {
             String sectorsJson = Files.readString(Paths.get("src/main/resources/dictionary/sectors.json"));
             String contractTypesJson = Files.readString(Paths.get("src/main/resources/dictionary/contract_types.json"));
             String diplomaTypesJson = Files.readString(Paths.get("src/main/resources/dictionary/diploma_types.json"));
+            String personalityTraitsJson = Files.readString(Paths.get("src/main/resources/dictionary/personality_traits.json"));
 
             hardSkills = new JSONObject(hardSkillsJson).getJSONArray("skills");
             softSkills = new JSONObject(softSkillsJson).getJSONArray("skills");
@@ -37,6 +40,8 @@ public class MarocAnnoncesCleaner implements JobCleaner {
             sectors = new JSONObject(sectorsJson).getJSONArray("sectors");
             contractTypes = new JSONObject(contractTypesJson).getJSONArray("contract_types");
             diplomaTypes = new JSONObject(diplomaTypesJson).getJSONArray("diploma_types");
+            personalityTraits = new JSONObject(personalityTraitsJson).getJSONArray("traits");
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -47,248 +52,282 @@ public class MarocAnnoncesCleaner implements JobCleaner {
         JSONObject cleanedJobOffer = new JSONObject();
 
         // Extract and clean fields
-        cleanedJobOffer.put("location", rawJobOffer.optString("city"));
+        cleanedJobOffer.put("location", cleanText(rawJobOffer.optString("city", "NA")));
         cleanedJobOffer.put("sector", extractSector(rawJobOffer));
-        cleanedJobOffer.put("job_description", cleanDescription(rawJobOffer.optString("description")));
+        cleanedJobOffer.put("job_description", cleanText(rawJobOffer.optString("description", "NA")));
         cleanedJobOffer.put("min_salary", extractMinSalary(rawJobOffer));
         cleanedJobOffer.put("is_remote", isRemote(rawJobOffer) ? 1 : 0);
-        cleanedJobOffer.put("hard_skills", extractSkills(rawJobOffer, true).toString());
-        cleanedJobOffer.put("soft_skills", extractSkills(rawJobOffer, false).toString());
-        cleanedJobOffer.put("company", extractCompany(rawJobOffer));
-        cleanedJobOffer.put("foreign_company", isForeignCompany(rawJobOffer) ? 1 : 0);
-        cleanedJobOffer.put("company_description", extractCompanyDescription(rawJobOffer));
+        cleanedJobOffer.put("hard_skills", new JSONArray(extractSkills(rawJobOffer, true)).toString());
+        cleanedJobOffer.put("soft_skills", new JSONArray(extractSkills(rawJobOffer, false)).toString());
+        cleanedJobOffer.put("company", cleanText(extractCompany(rawJobOffer)));
+        cleanedJobOffer.put("foriegn_company", isForeignCompany(rawJobOffer) ? 1 : 0);
+        cleanedJobOffer.put("company_description", cleanText(extractCompanyDescription(rawJobOffer)));
         cleanedJobOffer.put("contract_type", extractContractType(rawJobOffer));
         cleanedJobOffer.put("is_internship", isInternship(rawJobOffer) ? 1 : 0);
         cleanedJobOffer.put("source", "MarocAnnonces");
-        cleanedJobOffer.put("link", rawJobOffer.optString("link"));
+        cleanedJobOffer.put("link", rawJobOffer.optString("link", "NA"));
         cleanedJobOffer.put("min_experience", extractMinExperience(rawJobOffer));
-        cleanedJobOffer.put("diploma", extractDiploma(rawJobOffer).toString());
-        cleanedJobOffer.put("title", cleanTitle(rawJobOffer.optString("title")));
+        cleanedJobOffer.put("diploma", new JSONArray(extractDiploma(rawJobOffer)).toString());
+        cleanedJobOffer.put("title", cleanText(rawJobOffer.optString("title", "NA")));
         cleanedJobOffer.put("application_date", LocalDate.now().toString());
-        cleanedJobOffer.put("date_of_publication", extractDate(rawJobOffer.optString("date")));
-        cleanedJobOffer.put("company_address", extractCompanyAddress(rawJobOffer));
+        cleanedJobOffer.put("date_of_publication", extractDate(rawJobOffer.optString("date", "")));
+        cleanedJobOffer.put("company_address", cleanText(extractCompanyAddress(rawJobOffer)));
         cleanedJobOffer.put("company_website", extractCompanyWebsite(rawJobOffer));
         cleanedJobOffer.put("region", extractRegion(rawJobOffer));
-        cleanedJobOffer.put("desired_profile", extractDesiredProfile(rawJobOffer));
+        cleanedJobOffer.put("desired_profile", cleanText(extractDesiredProfile(rawJobOffer)));
         cleanedJobOffer.put("personality_traits", extractPersonalityTraits(rawJobOffer));
         cleanedJobOffer.put("languages", extractLanguages(rawJobOffer));
-        cleanedJobOffer.put("language_proficiency", extractLanguageProficiency(rawJobOffer));
+        cleanedJobOffer.put("language_profeciency", extractLanguageProficiency(rawJobOffer));
         cleanedJobOffer.put("recommended_skills", extractRecommendedSkills(rawJobOffer));
-        cleanedJobOffer.put("job", extractJob(rawJobOffer));
+        cleanedJobOffer.put("job", cleanText(extractJob(rawJobOffer)));
 
         return cleanedJobOffer;
     }
 
-    private String cleanTitle(String title) {
-        return title.replaceAll("[^a-zA-Z0-9àâçéèêëîïôûùüÿñæœ\\s()-]", "").trim();
+    private String cleanText(String text) {
+        if (text == null || text.isEmpty() || text.equals("N/A")) return "NA";
+    
+        // Replace specific accented characters with their ASCII equivalents before normalization
+        String preprocessed = text
+            .replaceAll("é", "e")
+            .replaceAll("è", "e")
+            .replaceAll("ê", "e")
+            .replaceAll("à", "a")
+            .replaceAll("ù", "u")
+            .replaceAll("ç", "c")
+            .replaceAll("ô", "o")
+            .replaceAll("î", "i")
+            .replaceAll("ï", "i")
+            .replaceAll("â", "a");
+    
+        // Normalize the text to NFD form (decomposes characters into base + diacritics)
+        String normalized = Normalizer.normalize(preprocessed, Normalizer.Form.NFD);
+    
+        // Remove any remaining diacritical marks
+        String replaced = normalized.replaceAll("\\p{M}", "");
+    
+        // Replace invalid characters with a space
+        replaced = replaced.replaceAll("[^a-zA-Z0-9\\s.,;:()'-]", " ");
+    
+        // Normalize spaces and trim
+        replaced = replaced.replaceAll("\\s+", " ").trim();
+    
+        return replaced.isEmpty() ? "NA" : replaced;
     }
-
-    private String cleanDescription(String description) {
-        // Remove HTML tags
-        description = description.replaceAll("<[^>]*>", "");
-        // Remove extra whitespace
-        description = description.replaceAll("\\s+", " ").trim();
-        // Remove special characters except punctuation
-        description = description.replaceAll("[^a-zA-Z0-9àâçéèêëîïôûùüÿñæœ.,;:!?()\\s-]", "");
-        return description;
-    }
+    
 
     private String extractDate(String dateString) {
+        if (dateString == null || dateString.isEmpty()) {
+            return LocalDate.now().toString();
+        }
         Pattern datePattern = Pattern.compile("Publiée le: (\\d{2} \\w{3}-\\d{2}:\\d{2})");
         Matcher matcher = datePattern.matcher(dateString);
         if (matcher.find()) {
-            String extractedDate = matcher.group(1);
-            DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd MMM-yy:mm");
-            LocalDate date = LocalDate.parse(extractedDate, inputFormatter);
-            return date.toString(); // Returns in yyyy-MM-dd format
+            try {
+                String extractedDate = matcher.group(1);
+                DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd MMM-yy:mm");
+                LocalDate date = LocalDate.parse(extractedDate, inputFormatter);
+                return date.toString();
+            } catch (Exception e) {
+                return LocalDate.now().toString();
+            }
         }
-        return LocalDate.now().toString(); // Default to current date if parsing fails
+        return LocalDate.now().toString();
     }
 
     private String extractSector(JSONObject jobOffer) {
-        String info = jobOffer.optString("info");
+        String info = jobOffer.optString("info", "");
         Pattern sectorPattern = Pattern.compile("Domaine : ([^;]+)");
         Matcher matcher = sectorPattern.matcher(info);
         if (matcher.find()) {
             String extractedSector = matcher.group(1).trim();
             for (int i = 0; i < sectors.length(); i++) {
-                String sector = sectors.getString(i);
-                if (extractedSector.toLowerCase().contains(sector.toLowerCase())) {
-                    return sector;
+                if (extractedSector.toLowerCase().contains(sectors.getString(i).toLowerCase())) {
+                    return cleanText(sectors.getString(i));
                 }
             }
-            return extractedSector;
         }
-        return "Non spécifié";
+        return "NA";
     }
 
     private String extractContractType(JSONObject jobOffer) {
-        String info = jobOffer.optString("info");
+        String info = jobOffer.optString("info", "");
         Pattern contractPattern = Pattern.compile("Contrat : ([^;]+)");
         Matcher matcher = contractPattern.matcher(info);
         if (matcher.find()) {
             String extractedContract = matcher.group(1).trim();
             for (int i = 0; i < contractTypes.length(); i++) {
-                String contractType = contractTypes.getString(i);
-                if (extractedContract.equalsIgnoreCase(contractType)) {
-                    return contractType;
+                if (extractedContract.toLowerCase().contains(contractTypes.getString(i).toLowerCase())) {
+                    return cleanText(contractTypes.getString(i));
                 }
             }
-            return extractedContract;
         }
-        return "Non spécifié";
+        return "NA";
     }
 
     private float extractMinSalary(JSONObject jobOffer) {
-        String info = jobOffer.optString("info");
+        String info = jobOffer.optString("info", "");
         Pattern salaryPattern = Pattern.compile("Salaire : (\\d+)");
         Matcher matcher = salaryPattern.matcher(info);
-        if (matcher.find()) {
-            return Float.parseFloat(matcher.group(1));
-        }
-        return 0.0f;
+        return matcher.find() ? Float.parseFloat(matcher.group(1)) : 0.0f;
     }
 
     private int extractMinExperience(JSONObject jobOffer) {
-        String description = jobOffer.optString("description");
-        Pattern experiencePattern = Pattern.compile("Expérience (?:de |d'|: )(\\d+)");
+        String description = jobOffer.optString("description", "");
+        Pattern experiencePattern = Pattern.compile("(?:Expérience|Experience)\\s*(?:de |d'|: )(\\d+)", 
+                                                  Pattern.CASE_INSENSITIVE);
         Matcher matcher = experiencePattern.matcher(description);
-        if (matcher.find()) {
-            return Integer.parseInt(matcher.group(1));
-        }
-        return 0;
+        return matcher.find() ? Integer.parseInt(matcher.group(1)) : 0;
     }
 
-    private JSONArray extractDiploma(JSONObject jobOffer) {
-        String info = jobOffer.optString("info");
+    private List<String> extractDiploma(JSONObject jobOffer) {
+        String info = jobOffer.optString("info", "");
         Pattern educationPattern = Pattern.compile("Niveau d'études : ([^;]+)");
         Matcher matcher = educationPattern.matcher(info);
         List<String> diplomas = new ArrayList<>();
         if (matcher.find()) {
             String educationLevel = matcher.group(1).trim();
             for (int i = 0; i < diplomaTypes.length(); i++) {
-                String diploma = diplomaTypes.getString(i);
-                if (educationLevel.toLowerCase().contains(diploma.toLowerCase())) {
-                    diplomas.add(diploma);
+                if (educationLevel.toLowerCase().contains(diplomaTypes.getString(i).toLowerCase())) {
+                    diplomas.add(diplomaTypes.getString(i));
                 }
             }
         }
-        return new JSONArray(diplomas);
+        return diplomas.isEmpty() ? List.of("NA") : diplomas;
     }
 
     private String extractLanguages(JSONObject jobOffer) {
-        String description = jobOffer.optString("description").toLowerCase();
+        String description = jobOffer.optString("description", "").toLowerCase();
         List<String> languages = new ArrayList<>();
-        String[] languageKeywords = {"français", "anglais", "arabe", "espagnol", "allemand", "italien", "chinois"};
-
-        for (String keyword : languageKeywords) {
-            if (description.contains(keyword)) {
-                languages.add(keyword);
-            }
-        }
-
-        return String.join(", ", languages);
+        
+        if (description.contains("francais")) languages.add("francais");
+        if (description.contains("anglais")) languages.add("anglais");
+        if (description.contains("arabe")) languages.add("arabe");
+        if (description.contains("espagnol")) languages.add("espagnol");
+        
+        return languages.isEmpty() ? "NA" : String.join(", ", languages);
     }
 
-    private JSONArray extractSkills(JSONObject jobOffer, boolean isHardSkill) {
-        String description = jobOffer.optString("description");
-        List<String> skills = new ArrayList<>();
+    private List<String> extractSkills(JSONObject jobOffer, boolean isHardSkill) {
+        String description = jobOffer.optString("description", "");
+        List<String> foundSkills = new ArrayList<>();
         JSONArray skillsToCheck = isHardSkill ? hardSkills : softSkills;
 
         for (int i = 0; i < skillsToCheck.length(); i++) {
             String skill = skillsToCheck.getString(i);
-            Pattern skillPattern = Pattern.compile("\\b" + Pattern.quote(skill) + "\\b", Pattern.CASE_INSENSITIVE);
-            Matcher matcher = skillPattern.matcher(description);
-            if (matcher.find()) {
-                skills.add(skill);
+            if (description.toLowerCase().contains(skill.toLowerCase())) {
+                foundSkills.add(skill);
             }
         }
-
-        return new JSONArray(skills);
+        return foundSkills;
     }
 
     private boolean isRemote(JSONObject jobOffer) {
-        String description = jobOffer.optString("description").toLowerCase();
-        return description.contains("télétravail") || description.contains("à distance") || description.contains("remote");
+        String description = jobOffer.optString("description", "").toLowerCase();
+        return description.contains("teletravail") || description.contains("a distance") || 
+               description.contains("remote") || description.contains("travail a domicile");
     }
 
     private String extractCompany(JSONObject jobOffer) {
-        // Implement logic to extract company name
-        return "Non spécifié";
+        String info = jobOffer.optString("info", "");
+        Pattern companyPattern = Pattern.compile("Entreprise : ([^;]+)");
+        Matcher matcher = companyPattern.matcher(info);
+        return matcher.find() ? cleanText(matcher.group(1)) : "NA";
     }
 
     private boolean isForeignCompany(JSONObject jobOffer) {
-        String description = jobOffer.optString("description").toLowerCase();
+        String description = jobOffer.optString("description", "").toLowerCase();
         return description.contains("international") || description.contains("multinational") ||
-               description.contains("étranger") || description.contains("foreign");
+               description.contains("etranger") || description.contains("groupe international");
     }
 
     private String extractCompanyDescription(JSONObject jobOffer) {
-        // Implement logic to extract company description
-        return "Non spécifié";
+        String info = jobOffer.optString("info", "");
+        Pattern descPattern = Pattern.compile("Description entreprise : ([^;]+)");
+        Matcher matcher = descPattern.matcher(info);
+        return matcher.find() ? cleanText(matcher.group(1)) : "NA";
     }
 
     private String extractCompanyAddress(JSONObject jobOffer) {
-        // Implement logic to extract company address
-        return "Non spécifié";
+        String info = jobOffer.optString("info", "");
+        Pattern addressPattern = Pattern.compile("Adresse : ([^;]+)");
+        Matcher matcher = addressPattern.matcher(info);
+        return matcher.find() ? cleanText(matcher.group(1)) : "NA";
     }
 
     private String extractCompanyWebsite(JSONObject jobOffer) {
-        // Implement logic to extract company website
-        return "Non spécifié";
+        String description = jobOffer.optString("description", "");
+        Pattern websitePattern = Pattern.compile("(?:http[s]?://)?(?:www\\.)?[\\w-]+\\.[\\w.]+");
+        Matcher matcher = websitePattern.matcher(description);
+        return matcher.find() ? matcher.group() : "NA";
     }
 
     private String extractRegion(JSONObject jobOffer) {
-        String city = jobOffer.optString("city");
+        String city = jobOffer.optString("city", "");
         for (int i = 0; i < regions.length(); i++) {
-            String region = regions.getString(i);
-            if (city.toLowerCase().contains(region.toLowerCase())) {
-                return region;
+            if (city.toLowerCase().contains(regions.getString(i).toLowerCase())) {
+                return cleanText(regions.getString(i));
             }
         }
-        return "Autre";
+        return "NA";
     }
 
     private String extractDesiredProfile(JSONObject jobOffer) {
-        // Implement logic to extract desired profile
-        return "Non spécifié";
+        String description = jobOffer.optString("description", "");
+        Pattern profilePattern = Pattern.compile("Profil recherché :?\\s*([^\\n]+)");
+        Matcher matcher = profilePattern.matcher(description);
+        return matcher.find() ? cleanText(matcher.group(1)) : "NA";
     }
 
     private String extractPersonalityTraits(JSONObject jobOffer) {
-        // Implement logic to extract personality traits
-        return "Non spécifié";
+        String description = jobOffer.optString("description", "");
+        List<String> foundTraits = new ArrayList<>();
+        
+        for (int i = 0; i < personalityTraits.length(); i++) {
+            String trait = personalityTraits.getString(i);
+            if (description.toLowerCase().contains(trait.toLowerCase())) {
+                foundTraits.add(trait);
+            }
+        }
+        return foundTraits.isEmpty() ? "NA" : String.join(", ", foundTraits);
     }
 
     private String extractLanguageProficiency(JSONObject jobOffer) {
-        String description = jobOffer.optString("description").toLowerCase();
-        if (description.contains("courant") || description.contains("bilingue") || description.contains("natif")) {
+        String description = jobOffer.optString("description", "").toLowerCase();
+        if (description.contains("courant") || description.contains("bilingue")) {
             return "Courant";
-        } else if (description.contains("intermédiaire") || description.contains("bon niveau")) {
-            return "Intermédiaire";
-        } else if (description.contains("basique") || description.contains("notions")) {
-            return "Basique";
+        } else if (description.contains("intermediaire") || description.contains("bon niveau")) {
+            return "Intermediaire";
+        } else if (description.contains("debutant") || description.contains("basique")) {
+            return "Debutant";
         }
-        return "Non spécifié";
+        return "NA";
     }
 
     private String extractRecommendedSkills(JSONObject jobOffer) {
-        // Implement logic to extract recommended skills
-        return "Non spécifié";
+        String description = jobOffer.optString("description", "").toLowerCase();
+        List<String> skills = new ArrayList<>();
+        String[] recommendedSkills = {"git", "agile", "scrum", "docker", "jenkins", "aws", 
+                                    "azure", "linux", "windows", "office", "excel"};
+
+        for (String skill : recommendedSkills) {
+            if (description.contains(skill)) {
+                skills.add(skill);
+            }
+        }
+        return skills.isEmpty() ? "NA" : String.join(", ", skills);
     }
 
     private String extractJob(JSONObject jobOffer) {
-        String info = jobOffer.optString("info");
+        String info = jobOffer.optString("info", "");
         Pattern functionPattern = Pattern.compile("Fonction : ([^;]+)");
         Matcher matcher = functionPattern.matcher(info);
-        if (matcher.find()) {
-            return matcher.group(1).trim();
-        }
-        return "Non spécifié";
+        return matcher.find() ? cleanText(matcher.group(1)) : "NA";
     }
 
     private boolean isInternship(JSONObject jobOffer) {
-        String title = jobOffer.optString("title").toLowerCase();
-        String description = jobOffer.optString("description").toLowerCase();
+        String title = jobOffer.optString("title", "").toLowerCase();
+        String description = jobOffer.optString("description", "").toLowerCase();
         return title.contains("stage") || title.contains("stagiaire") ||
                description.contains("stage") || description.contains("stagiaire");
     }

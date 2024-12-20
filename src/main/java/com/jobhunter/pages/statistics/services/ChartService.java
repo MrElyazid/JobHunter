@@ -15,10 +15,18 @@ public class ChartService {
         try {
             ResultSet rs = DatabaseQueryService.getContractTypeDistribution();
             while (rs.next()) {
-                dataset.setValue(rs.getString("contract_type"), rs.getInt("count"));
+                String contractType = rs.getString("contract_type");
+                if (contractType != null && !contractType.trim().isEmpty()) {
+                    dataset.setValue(contractType, rs.getInt("count"));
+                }
+            }
+            // Add a check for empty dataset
+            if (dataset.getItemCount() == 0) {
+                dataset.setValue("No Data Available", 1);
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            dataset.setValue("Error Loading Data", 1);
         }
 
         JFreeChart chart = ChartFactory.createPieChart(
@@ -36,12 +44,32 @@ public class ChartService {
         DefaultPieDataset dataset = new DefaultPieDataset();
         try {
             ResultSet rs = DatabaseQueryService.getCompanyTypeDistribution();
+            int localCount = 0;
+            int foreignCount = 0;
+            int totalProcessed = 0;
+            
             while (rs.next()) {
-                String type = rs.getBoolean("foriegn_company") ? "Foreign" : "Local";
-                dataset.setValue(type, rs.getInt("count"));
+                boolean isForeign = rs.getBoolean("foriegn_company");
+                int count = rs.getInt("count");
+                if (!rs.wasNull()) {
+                    if (isForeign) {
+                        foreignCount += count;
+                    } else {
+                        localCount += count;
+                    }
+                    totalProcessed += count;
+                }
+            }
+            
+            if (totalProcessed > 0) {
+                if (localCount > 0) dataset.setValue("Local", localCount);
+                if (foreignCount > 0) dataset.setValue("Foreign", foreignCount);
+            } else {
+                dataset.setValue("No Data Available", 1);
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            dataset.setValue("Error Loading Data", 1);
         }
 
         JFreeChart chart = ChartFactory.createPieChart(
@@ -55,87 +83,31 @@ public class ChartService {
         return new ChartPanel(chart);
     }
 
-    public static ChartPanel createSalaryDistributionChart() {
-        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        try {
-            ResultSet rs = DatabaseQueryService.getSalaryDistribution();
-            while (rs.next()) {
-                dataset.addValue(rs.getInt("count"), "Salary Distribution", 
-                               rs.getString("salary_range"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        JFreeChart chart = ChartFactory.createBarChart(
-            "Salary Distribution",
-            "Salary Range (MAD)",
-            "Number of Jobs",
-            dataset
-        );
-
-        return new ChartPanel(chart);
-    }
-
-    public static ChartPanel createSalaryByExperienceChart() {
-        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        try {
-            ResultSet rs = DatabaseQueryService.getSalaryByExperience();
-            while (rs.next()) {
-                dataset.addValue(rs.getDouble("avg_salary"), "Average Salary", 
-                               rs.getInt("min_experience") + " years");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        JFreeChart chart = ChartFactory.createLineChart(
-            "Average Salary by Experience",
-            "Years of Experience",
-            "Average Salary (MAD)",
-            dataset
-        );
-
-        return new ChartPanel(chart);
-    }
-
     public static ChartPanel createJobsByCityChart() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         try {
             ResultSet rs = DatabaseQueryService.getJobsByCity();
+            boolean hasData = false;
             while (rs.next()) {
-                dataset.addValue(rs.getInt("count"), "Jobs", rs.getString("location"));
+                String location = rs.getString("location");
+                int count = rs.getInt("count");
+                if (location != null && !location.equals("Unknown") && !location.trim().isEmpty()) {
+                    dataset.addValue(count, "Jobs", location);
+                    hasData = true;
+                }
+            }
+            if (!hasData) {
+                dataset.addValue(0, "No Location Data Available", "N/A");
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            dataset.addValue(0, "Error Loading Data", "Error");
         }
 
         JFreeChart chart = ChartFactory.createBarChart(
-            "Top 10 Cities by Job Count",
+            "Top Cities by Job Count",
             "City",
             "Number of Jobs",
-            dataset
-        );
-
-        return new ChartPanel(chart);
-    }
-
-    public static ChartPanel createSalaryByLocationChart() {
-        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        try {
-            ResultSet rs = DatabaseQueryService.getSalaryByLocation();
-            while (rs.next()) {
-                dataset.addValue(rs.getDouble("avg_salary"), "Average Salary", 
-                               rs.getString("location"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        JFreeChart chart = ChartFactory.createBarChart(
-            "Average Salary by Location",
-            "City",
-            "Average Salary (MAD)",
             dataset
         );
 
@@ -146,11 +118,21 @@ public class ChartService {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         try {
             ResultSet rs = DatabaseQueryService.getTopSkills();
+            boolean hasData = false;
             while (rs.next()) {
-                dataset.addValue(rs.getInt("count"), "Demand", rs.getString("skill"));
+                String skill = rs.getString("skill");
+                int count = rs.getInt("count");
+                if (skill != null && !skill.trim().isEmpty() && count > 0) {
+                    dataset.addValue(count, "Demand", skill);
+                    hasData = true;
+                }
+            }
+            if (!hasData) {
+                dataset.addValue(0, "No Skills Data Available", "N/A");
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            dataset.addValue(0, "Error Loading Data", "Error");
         }
 
         return new ChartPanel(ChartFactory.createBarChart(
@@ -161,72 +143,34 @@ public class ChartService {
         ));
     }
 
-    public static ChartPanel createSkillsBySectorChart() {
-        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        try {
-            ResultSet rs = DatabaseQueryService.getSkillsBySector();
-            while (rs.next()) {
-                dataset.addValue(
-                    rs.getDouble("percentage"),
-                    rs.getString("sector"),
-                    rs.getString("skill")
-                );
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return new ChartPanel(ChartFactory.createBarChart(
-            "Skills Distribution by Sector",
-            "Skill",
-            "Percentage of Jobs (%)",
-            dataset
-        ));
-    }
-
-    public static ChartPanel createTrendingSkillsChart() {
-        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        try {
-            ResultSet rs = DatabaseQueryService.getTrendingSkills();
-            while (rs.next()) {
-                dataset.addValue(
-                    rs.getInt("demand_count"),
-                    "Demand",
-                    rs.getString("skill")
-                );
-                dataset.addValue(
-                    rs.getDouble("avg_salary") / 1000, // Convert to thousands for better visualization
-                    "Avg Salary (K MAD)",
-                    rs.getString("skill")
-                );
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return new ChartPanel(ChartFactory.createLineChart(
-            "Trending Skills (Demand vs Salary)",
-            "Skills",
-            "Demand (Jobs) / Salary (K MAD)",
-            dataset
-        ));
-    }
-
     public static ChartPanel createJobTrendsChart() {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         try {
             ResultSet rs = DatabaseQueryService.getJobTrends();
+            boolean hasData = false;
             while (rs.next()) {
                 String sector = rs.getString("sector");
-                dataset.addValue(rs.getInt("job_count"), "Job Count", sector);
-                dataset.addValue(rs.getDouble("remote_percentage"), "Remote %", sector);
-                dataset.addValue(rs.getDouble("foreign_percentage"), "Foreign %", sector);
+                if (sector != null && !sector.trim().isEmpty()) {
+                    int jobCount = rs.getInt("job_count");
+                    double remotePercentage = rs.getDouble("remote_percentage");
+                    if (jobCount > 0) {
+                        dataset.addValue(jobCount, "Job Count", sector);
+                        if (!rs.wasNull()) {
+                            dataset.addValue(remotePercentage, "Remote %", sector);
+                        }
+                        hasData = true;
+                    }
+                }
+            }
+            if (!hasData) {
+                dataset.addValue(0, "No Trend Data Available", "N/A");
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            dataset.addValue(0, "Error Loading Data", "Error");
         }
 
-        return new ChartPanel(ChartFactory.createLineChart(
+        return new ChartPanel(ChartFactory.createBarChart(
             "Job Market Trends by Sector",
             "Sector",
             "Count / Percentage",

@@ -17,7 +17,7 @@ public class LocationAnalysisPanel extends JPanel {
         chartsPanel.add(ChartService.createJobsByCityChart());
         
         // Add salary by location chart
-        chartsPanel.add(ChartService.createSalaryByLocationChart());
+        //chartsPanel.add(ChartService.createSalaryByLocationChart());
 
         add(chartsPanel, BorderLayout.CENTER);
     }

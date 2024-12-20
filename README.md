@@ -130,7 +130,7 @@ The application features a modern graphical interface with four main sections:
 The project has been updated to include more comprehensive job information and an improved data cleaning pipeline. Key changes include:
 1. Enhanced data extraction in `Cleaner.java` to capture additional job details.
 2. Improved data validation and formatting in `CleanLLM.java`.
-3. Renamed `CleanerNLP.java` to `RegExCleaner.java` and implemented a more robust RegEx-based cleaning pipeline.
+3. `RegExCleaner.java` implemented a more robust RegEx-based cleaning pipeline.
 4. Removed OpenNLP dependencies in favor of custom RegEx patterns and dictionary-based extraction.
 5. Enhanced individual cleaner classes for each job portal to rely more heavily on RegEx and JSON-based dictionaries.
 6. Updated database insertion process in `InsertJson.java` to accommodate the new fields.

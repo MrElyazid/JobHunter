@@ -24,64 +24,101 @@ public class BrowseJobsPage {
         frame = new JFrame("Browse Jobs");
         frame.setBounds(100, 100, 1200, 800);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new BorderLayout(10, 10));
+        frame.setLayout(new BorderLayout(0, 0));
 
         // Initialize service
         jobService = new JobService(frame);
 
         // Top Panel with Back Button and Title
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton backButton = new JButton("← Back");
-        backButton.addActionListener(e -> {
-            frame.setVisible(false); // Hide first
-            frame.dispose(); // Then dispose
-            SwingUtilities.invokeLater(() -> MainPage.getInstance().show()); // Show main page on EDT
-        });
-        topPanel.add(backButton);
+        JPanel topPanel = createTopPanel();
         
-        JLabel titleLabel = new JLabel("Job Listings", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        topPanel.add(Box.createHorizontalStrut(450));
-        topPanel.add(titleLabel);
-
         // Initialize panels
         filtersPanel = new FiltersPanel(this::refreshJobList);
         jobsTablePanel = new JobsTablePanel(this::loadJobDetails);
         jobDetailsPanel = new JobDetailsPanel();
 
-        // Layout setup
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        // Create main split pane for jobs table and details
+        JSplitPane mainSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        mainSplitPane.setTopComponent(jobsTablePanel);
+        mainSplitPane.setBottomComponent(jobDetailsPanel);
+        mainSplitPane.setResizeWeight(0.7); // Give 70% to table by default
+        mainSplitPane.setOneTouchExpandable(true);
         
-        // Add components to main panel
-        mainPanel.add(filtersPanel, BorderLayout.NORTH);
-        mainPanel.add(jobsTablePanel, BorderLayout.CENTER);
-        mainPanel.add(jobDetailsPanel, BorderLayout.SOUTH);
+        // Create content panel that holds filters and main split pane
+        JPanel contentPanel = new JPanel(new BorderLayout(0, 5));
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        contentPanel.add(filtersPanel, BorderLayout.NORTH);
+        contentPanel.add(mainSplitPane, BorderLayout.CENTER);
 
         // Add panels to frame
         frame.add(topPanel, BorderLayout.NORTH);
-        frame.add(mainPanel, BorderLayout.CENTER);
+        frame.add(contentPanel, BorderLayout.CENTER);
 
         // Initial data load
         refreshJobList();
     }
 
+    private JPanel createTopPanel() {
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
+        topPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+        // Back button
+        JButton backButton = new JButton("← Back");
+        backButton.addActionListener(e -> {
+            frame.setVisible(false);
+            frame.dispose();
+            SwingUtilities.invokeLater(() -> MainPage.getInstance().show());
+        });
+
+        // Title
+        JLabel titleLabel = new JLabel("Job Listings");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+        // Add components with proper spacing
+        topPanel.add(backButton);
+        topPanel.add(Box.createHorizontalGlue());
+        topPanel.add(titleLabel);
+        topPanel.add(Box.createHorizontalGlue());
+        topPanel.add(Box.createHorizontalStrut(backButton.getPreferredSize().width)); // Balance the back button
+
+        return topPanel;
+    }
+
     private void refreshJobList() {
         try (Connection conn = DatabaseConnection.getConnection()) {
+            // Build query with all filter parameters
             String query = jobService.buildQueryFromFilters(
                 filtersPanel.getSearchText(),
                 filtersPanel.getSelectedLocation(),
+                filtersPanel.getSelectedRegion(),
                 filtersPanel.getSelectedSector(),
                 filtersPanel.getSelectedContract(),
-                filtersPanel.isRemoteOnly()
+                filtersPanel.getSelectedLanguage(),
+                filtersPanel.getSelectedProficiency(),
+                filtersPanel.getSelectedExperience(),
+                filtersPanel.getMinSalary(),
+                filtersPanel.getMaxSalary(),
+                filtersPanel.getPublicationDateFilter(),
+                filtersPanel.isRemoteOnly(),
+                filtersPanel.isForeignCompanyOnly(),
+                filtersPanel.isInternshipOnly()
             );
 
             try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+                // Set all query parameters
                 jobService.setQueryParameters(pstmt,
                     filtersPanel.getSearchText(),
                     filtersPanel.getSelectedLocation(),
+                    filtersPanel.getSelectedRegion(),
                     filtersPanel.getSelectedSector(),
-                    filtersPanel.getSelectedContract()
+                    filtersPanel.getSelectedContract(),
+                    filtersPanel.getSelectedLanguage(),
+                    filtersPanel.getSelectedProficiency(),
+                    filtersPanel.getMinSalary(),
+                    filtersPanel.getMaxSalary(),
+                    filtersPanel.getPublicationDateFilter()
                 );
 
                 ResultSet rs = pstmt.executeQuery();

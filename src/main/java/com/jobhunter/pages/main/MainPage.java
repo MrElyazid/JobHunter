@@ -6,6 +6,7 @@ import com.jobhunter.pages.refreshDb.RefreshDbPage;
 import com.jobhunter.pages.browse.BrowseJobsPage;
 import com.jobhunter.pages.chatbot.ChatbotPage;
 import com.jobhunter.pages.statistics.StatisticsPage;
+import com.jobhunter.pages.regression.RegressionModelsPage;
 
 public class MainPage {
     private JFrame frame;
@@ -70,9 +71,14 @@ public class MainPage {
             "View market trends and analysis",
             e -> openStatistics());
 
+        addButton(buttonPanel, gbc, 4,
+            "ML Models",
+            "Predict salaries and find matching jobs",
+            e -> openRegressionModels());
+
         // Add padding panel
         gbc.weighty = 1.0;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         buttonPanel.add(new JPanel(), gbc);
 
         // Wrap button panel in another panel with padding
@@ -136,6 +142,12 @@ public class MainPage {
         frame.setVisible(false);
         StatisticsPage statsPage = new StatisticsPage();
         statsPage.show();
+    }
+
+    private void openRegressionModels() {
+        frame.setVisible(false);
+        RegressionModelsPage modelsPage = new RegressionModelsPage();
+        modelsPage.show();
     }
 
     public void show() {

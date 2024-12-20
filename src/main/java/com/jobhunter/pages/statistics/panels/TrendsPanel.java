@@ -14,7 +14,7 @@ public class TrendsPanel extends JPanel {
         JPanel chartsPanel = new JPanel(new GridLayout(2, 1, 10, 10));
         
         // Add trending skills chart
-        chartsPanel.add(ChartService.createTrendingSkillsChart());
+        //chartsPanel.add(ChartService.createTrendingSkillsChart());
         
         // Add job trends chart
         chartsPanel.add(ChartService.createJobTrendsChart());
