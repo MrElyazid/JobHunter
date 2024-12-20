@@ -21,21 +21,16 @@ import java.util.List;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import com.jobhunter.util.DataPreprocessor;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 public class JobRecommendationPanel extends JPanel {
-    // ... [previous code remains the same until line 334] ...
     private JComboBox<String> sectorCombo;
     private JComboBox<String> cityCombo;
     private JSpinner salarySpinner;
     private JSpinner experienceSpinner;
     private JCheckBox remoteCheckbox;
     private JComboBox<String> contractTypeCombo;
-    private JTextArea skillsArea;
     private JTextArea resultArea;
     private Instances dataset;
     private LinearNNSearch nearestNeighbor;
-    private static final ObjectMapper mapper = new ObjectMapper();
     
     public JobRecommendationPanel() {
         setLayout(new BorderLayout(10, 10));
@@ -101,19 +96,9 @@ public class JobRecommendationPanel extends JPanel {
         contractTypeCombo = new JComboBox<>(new String[]{"Any", "CDI", "CDD", "CI", "STAGE"});
         formPanel.add(contractTypeCombo, gbc);
         
-        // Skills
-        gbc.gridx = 0;
-        gbc.gridy = 6;
-        formPanel.add(new JLabel("Skills (one per line):"), gbc);
-        
-        gbc.gridx = 1;
-        skillsArea = new JTextArea(4, 20);
-        JScrollPane skillsScroll = new JScrollPane(skillsArea);
-        formPanel.add(skillsScroll, gbc);
-        
         // Find Jobs Button
         gbc.gridx = 0;
-        gbc.gridy = 7;
+        gbc.gridy = 6;
         gbc.gridwidth = 2;
         JButton findButton = new JButton("Find Matching Jobs");
         findButton.addActionListener(e -> findMatchingJobs());
@@ -149,16 +134,108 @@ public class JobRecommendationPanel extends JPanel {
             replaceMissing.setInputFormat(dataset);
             dataset = Filter.useFilter(dataset, replaceMissing);
             
-            // Convert string attributes to nominal
-            StringToNominal stringToNominal = new StringToNominal();
-            stringToNominal.setAttributeRange("first-last");
-            stringToNominal.setInputFormat(dataset);
-            dataset = Filter.useFilter(dataset, stringToNominal);
+            // Create attributes list
+            ArrayList<Attribute> attributes = new ArrayList<>();
+            
+            // First collect all unique values for nominal attributes
+            Set<String> sectors = new HashSet<>();
+            Set<String> cities = new HashSet<>();
+            Set<String> contractTypes = new HashSet<>();
+            
+            // Iterate through original dataset to collect unique values
+            for (int i = 0; i < dataset.numInstances(); i++) {
+                Instance inst = dataset.instance(i);
+                Attribute sectorAttr = dataset.attribute("sector");
+                Attribute locationAttr = dataset.attribute("location");
+                Attribute contractAttr = dataset.attribute("contract_type");
+                
+                if (sectorAttr != null) {
+                    String sector = inst.toString(sectorAttr);
+                    if (!sector.isEmpty() && !sector.equals("?")) sectors.add(sector);
+                }
+                
+                if (locationAttr != null) {
+                    String city = inst.toString(locationAttr);
+                    if (!city.isEmpty() && !city.equals("?")) cities.add(city);
+                }
+                
+                if (contractAttr != null) {
+                    String contract = inst.toString(contractAttr);
+                    if (!contract.isEmpty() && !contract.equals("?")) contractTypes.add(contract);
+                }
+            }
+            
+            // Define attributes in specific order
+            // Numeric attributes
+            attributes.add(new Attribute("min_salary"));
+            attributes.add(new Attribute("min_experience"));
+            
+            // Nominal attributes
+            ArrayList<String> sectorList = new ArrayList<>(sectors);
+            ArrayList<String> cityList = new ArrayList<>(cities);
+            ArrayList<String> contractList = new ArrayList<>(contractTypes);
+            ArrayList<String> remoteList = new ArrayList<>(Arrays.asList("0", "1"));
+            
+            sectorList.sort(String::compareTo);
+            cityList.sort(String::compareTo);
+            contractList.sort(String::compareTo);
+            
+            attributes.add(new Attribute("sector", sectorList));
+            attributes.add(new Attribute("location", cityList));
+            attributes.add(new Attribute("contract_type", contractList));
+            attributes.add(new Attribute("is_remote", remoteList));
+            
+            // String attributes for display purposes
+            attributes.add(new Attribute("title", (ArrayList<String>)null));
+            attributes.add(new Attribute("company", (ArrayList<String>)null));
+            attributes.add(new Attribute("job_description", (ArrayList<String>)null));
+            
+            // Create new dataset
+            Instances newDataset = new Instances("jobs", attributes, dataset.numInstances());
+            
+            // Set numeric attributes as default class
+            newDataset.setClassIndex(0);  // min_salary as default class
+            
+            // Copy data to new dataset
+            for (int i = 0; i < dataset.numInstances(); i++) {
+                Instance oldInst = dataset.instance(i);
+                double[] values = new double[attributes.size()];
+                
+                // Set numeric values
+                values[0] = oldInst.value(dataset.attribute("min_salary"));
+                values[1] = oldInst.value(dataset.attribute("min_experience"));
+                
+                // Set nominal values
+                Attribute sectorAttr = newDataset.attribute("sector");
+                Attribute locationAttr = newDataset.attribute("location");
+                Attribute contractAttr = newDataset.attribute("contract_type");
+                Attribute remoteAttr = newDataset.attribute("is_remote");
+                
+                String sectorVal = oldInst.toString(dataset.attribute("sector"));
+                String locationVal = oldInst.toString(dataset.attribute("location"));
+                String contractVal = oldInst.toString(dataset.attribute("contract_type"));
+                String remoteVal = oldInst.toString(dataset.attribute("is_remote"));
+                
+                values[2] = sectorAttr.indexOfValue(sectorVal);
+                values[3] = locationAttr.indexOfValue(locationVal);
+                values[4] = contractAttr.indexOfValue(contractVal);
+                values[5] = remoteAttr.indexOfValue(remoteVal);
+                
+                // Set string values
+                values[6] = newDataset.attribute("title").addStringValue(oldInst.toString(dataset.attribute("title")));
+                values[7] = newDataset.attribute("company").addStringValue(oldInst.toString(dataset.attribute("company")));
+                values[8] = newDataset.attribute("job_description").addStringValue(oldInst.toString(dataset.attribute("job_description")));
+                
+                Instance newInst = new weka.core.DenseInstance(1.0, values);
+                newInst.setDataset(newDataset);
+                newDataset.add(newInst);
+            }
+            
+            // Update dataset reference
+            dataset = newDataset;
             
             // Remove instances with missing or invalid values
             Instances filteredData = new Instances(dataset, dataset.numInstances());
-            Set<String> sectors = new HashSet<>();
-            Set<String> cities = new HashSet<>();
             
             for (int i = 0; i < dataset.numInstances(); i++) {
                 Instance inst = dataset.instance(i);
@@ -173,11 +250,6 @@ public class JobRecommendationPanel extends JPanel {
                 // Add valid instance
                 if (isValid) {
                     filteredData.add(inst);
-                    
-                    String sector = inst.stringValue(dataset.attribute("sector"));
-                    String city = inst.stringValue(dataset.attribute("location"));
-                    if (!sector.isEmpty() && !sector.equals("?")) sectors.add(sector);
-                    if (!city.isEmpty() && !city.equals("?")) cities.add(city);
                 }
             }
             
@@ -218,28 +290,36 @@ public class JobRecommendationPanel extends JPanel {
                 throw new Exception("Dataset not properly initialized");
             }
             
-            // Create a query instance with user preferences
-            Instance queryInstance = new weka.core.DenseInstance(dataset.numAttributes());
+            // Create query instance with known structure
+            double[] queryValues = new double[dataset.numAttributes()];
+            
+            // Set numeric values (indices 0 and 1)
+            queryValues[0] = ((Number)salarySpinner.getValue()).doubleValue();
+            queryValues[1] = ((Number)experienceSpinner.getValue()).doubleValue();
+            
+            // Set nominal values (indices 2-5)
+            String sectorValue = sectorCombo.getSelectedItem().toString();
+            String locationValue = cityCombo.getSelectedItem().toString();
+            String contractValue = contractTypeCombo.getSelectedItem().toString();
+            String remoteValue = remoteCheckbox.isSelected() ? "1" : "0";
+            
+            queryValues[2] = dataset.attribute("sector").indexOfValue(sectorValue);
+            queryValues[3] = dataset.attribute("location").indexOfValue(locationValue);
+            queryValues[4] = !contractValue.equals("Any") ? 
+                dataset.attribute("contract_type").indexOfValue(contractValue.toUpperCase().trim()) :
+                weka.core.Utils.missingValue();
+            queryValues[5] = dataset.attribute("is_remote").indexOfValue(remoteValue);
+            
+            // Set string attributes as missing (indices 6-8)
+            queryValues[6] = weka.core.Utils.missingValue();
+            queryValues[7] = weka.core.Utils.missingValue();
+            queryValues[8] = weka.core.Utils.missingValue();
+            
+            Instance queryInstance = new weka.core.DenseInstance(1.0, queryValues);
             queryInstance.setDataset(dataset);
             
-            // Set attribute values based on user input
-            queryInstance.setValue(dataset.attribute("sector"), sectorCombo.getSelectedItem().toString());
-            queryInstance.setValue(dataset.attribute("location"), cityCombo.getSelectedItem().toString());
-            queryInstance.setValue(dataset.attribute("min_salary"), (Integer)salarySpinner.getValue());
-            queryInstance.setValue(dataset.attribute("min_experience"), (Integer)experienceSpinner.getValue());
-            queryInstance.setValue(dataset.attribute("is_remote"), remoteCheckbox.isSelected() ? "true" : "false");
-            
-            String contractType = contractTypeCombo.getSelectedItem().toString();
-            if (!contractType.equals("Any")) {
-                queryInstance.setValue(dataset.attribute("contract_type"), contractType);
-            }
-            
-            // Get user skills
-            Set<String> userSkills = new HashSet<>(Arrays.asList(
-                skillsArea.getText().toLowerCase().split("\n")));
-            
             // Find nearest neighbors
-            Instances neighbors = nearestNeighbor.kNearestNeighbours(queryInstance, 20);
+            Instances neighbors = nearestNeighbor.kNearestNeighbours(queryInstance, 10);
             
             // Score and rank jobs
             ArrayList<JobMatch> matches = new ArrayList<>();
@@ -247,7 +327,7 @@ public class JobRecommendationPanel extends JPanel {
                 Instance job = neighbors.instance(i);
                 
                 // Calculate match score based on various factors
-                double score = calculateMatchScore(job, queryInstance, userSkills);
+                double score = calculateMatchScore(job, queryInstance);
                 
                 matches.add(new JobMatch(
                     job.stringValue(dataset.attribute("title")),
@@ -281,7 +361,7 @@ public class JobRecommendationPanel extends JPanel {
             
             if (displayCount == 0) {
                 result.append("No jobs found matching your criteria.\n");
-                result.append("Try adjusting your preferences or adding more skills.");
+                result.append("Try adjusting your preferences.");
             }
             
             resultArea.setText(result.toString());
@@ -295,66 +375,46 @@ public class JobRecommendationPanel extends JPanel {
         }
     }
     
-    private double calculateMatchScore(Instance job, Instance query, Set<String> userSkills) {
+    private double calculateMatchScore(Instance job, Instance query) {
         double score = 0.0;
         
         try {
-            // Sector match (30%)
-            if (job.stringValue(dataset.attribute("sector")).equals(
-                query.stringValue(dataset.attribute("sector")))) {
-                score += 0.3;
-            }
-            
-            // Location match (20%)
-            if (job.stringValue(dataset.attribute("location")).equals(
-                query.stringValue(dataset.attribute("location")))) {
-                score += 0.2;
-            }
-            
             // Salary match (20%) - within 20% range
-            double querySalary = query.value(dataset.attribute("min_salary"));
-            double jobSalary = job.value(dataset.attribute("min_salary"));
+            double querySalary = query.value(0); // min_salary is at index 0
+            double jobSalary = job.value(0);
             if (Math.abs(jobSalary - querySalary) <= querySalary * 0.2) {
                 score += 0.2;
             }
             
             // Experience match (15%) - within 2 years
-            double queryExp = query.value(dataset.attribute("min_experience"));
-            double jobExp = job.value(dataset.attribute("min_experience"));
+            double queryExp = query.value(1); // min_experience is at index 1
+            double jobExp = job.value(1);
             if (Math.abs(jobExp - queryExp) <= 2) {
                 score += 0.15;
             }
             
+            // Sector match (30%)
+            if (job.value(2) == query.value(2)) { // sector is at index 2
+                score += 0.3;
+            }
+            
+            // Location match (20%)
+            if (job.value(3) == query.value(3)) { // location is at index 3
+                score += 0.2;
+            }
+            
+            // Contract type match (bonus 10% if specified and matches)
+            if (!query.isMissing(4) && job.value(4) == query.value(4)) { // contract_type is at index 4
+                score += 0.1;
+            }
+            
             // Remote work match (15%)
-            if (job.stringValue(dataset.attribute("is_remote")).equals(
-                query.stringValue(dataset.attribute("is_remote")))) {
+            if (job.value(5) == query.value(5)) { // is_remote is at index 5
                 score += 0.15;
             }
             
-            // Skills match (20% bonus)
-            try {
-                String skillsStr = job.stringValue(dataset.attribute("hard_skills"));
-                if (!skillsStr.equals("?") && !skillsStr.equals("[]")) {
-                    @SuppressWarnings("unchecked")
-                    java.util.List<String> jobSkills = mapper.readValue(skillsStr, ArrayList.class);
-                    
-                    int matchingSkills = 0;
-                    for (String skill : jobSkills) {
-                        if (userSkills.contains(skill.trim().toLowerCase())) {
-                            matchingSkills++;
-                        }
-                    }
-                    
-                    if (jobSkills.size() > 0) {
-                        score += (matchingSkills / (double)jobSkills.size()) * 0.2;
-                    }
-                }
-            } catch (Exception e) {
-                // Skills parsing failed, ignore skills score
-            }
-            
         } catch (Exception e) {
-            // Error calculating score, return current score
+            e.printStackTrace();
         }
         
         return score;
