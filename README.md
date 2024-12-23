@@ -29,11 +29,12 @@ JobHunter is a sophisticated Java-based application designed to analyze the Moro
      - Pattern-based data extraction
      - Dictionary-supported field normalization
      - Robust error handling and validation
+     - Uses `java.text.Normalizer` class for text normalization
 
 ### 3. Comprehensive Database Integration
 - Structured MySQL database schema
 - Rich job information storage including:
-  - Job details (title, description, requirements)
+  - Job details (title, description, requirements...)
   - Company information
   - Location and sector data
   - Salary and experience requirements
@@ -42,15 +43,17 @@ JobHunter is a sophisticated Java-based application designed to analyze the Moro
   - Contract details
   - Language requirements
   - Application deadlines
-- Efficient batch processing and data validation
+
 
 ### 4. Modern GUI Interface
 The application features a user-friendly interface with five main sections:
 
 1. **Database Management (refreshDB page)**
-   - Manual and scheduled database updates
+   - Manual database updates
+   - lets you choose which pipeline to use for data cleaning
    - Progress tracking for scraping operations
    - Data validation and error reporting
+   - database export
 
 2. **Job Browser (browse jobs page)**
    - Advanced search and filtering capabilities
@@ -63,13 +66,9 @@ The application features a user-friendly interface with five main sections:
    - Career guidance support
 
 4. **Statistics Dashboard**
-   - Interactive market trend visualization
    - Geographical distribution analysis
    - Salary range analytics
-   - Skills demand tracking
    - Company and sector insights
-   - Educational requirement analysis
-   - Language proficiency demands
    - Contract type distribution
 
 5. **ML Models**
@@ -93,10 +92,11 @@ The application features a user-friendly interface with five main sections:
    - Custom scraper implementations for each portal
 
 2. **Data Processing**
-   - OpenRouter AI API integration
+   - OpenRouter API integration
    - Regular expression patterns
    - JSON-based dictionaries
    - Custom cleaning algorithms
+   - The ``java.text.normalizer` for text normalization
 
 3. **Database Layer**
    - MySQL database
@@ -125,7 +125,7 @@ The application features a user-friendly interface with five main sections:
 - Java Development Kit (JDK) 11 or higher
 - MySQL Server 8.0+
 - Maven 3.6+
-- OpenRouter AI API key
+- OpenRouter API key
 
 ### Installation Steps
 1. Clone the repository

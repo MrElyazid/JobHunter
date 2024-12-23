@@ -1,6 +1,7 @@
 package com.jobhunter.pages.browse.panels;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.sql.*;
 import java.time.LocalDate;
@@ -33,21 +34,33 @@ public class FiltersPanel extends JPanel {
     private void initialize() {
         setLayout(new BorderLayout(5, 5));
         setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder("Filters"),
-            BorderFactory.createEmptyBorder(5, 5, 5, 5)
+            BorderFactory.createTitledBorder(null, "Filters",
+                TitledBorder.DEFAULT_JUSTIFICATION,
+                TitledBorder.DEFAULT_POSITION,
+                new Font("Segoe UI", Font.BOLD, 14),
+                new Color(25, 118, 210)),
+            BorderFactory.createEmptyBorder(10, 10, 10, 10)
         ));
 
         // Create main filter panel with GridBagLayout
         JPanel mainFilterPanel = new JPanel(new GridBagLayout());
+        mainFilterPanel.setBackground(Color.WHITE);
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(2, 2, 2, 2);
+        gbc.insets = new Insets(4, 4, 4, 4);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         // Search Panel (Top)
-        JPanel searchPanel = new JPanel(new BorderLayout(5, 0));
+        JPanel searchPanel = new JPanel(new BorderLayout(8, 0));
+        searchPanel.setBackground(Color.WHITE);
         searchField = new JTextField();
+        searchField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         searchField.addActionListener(e -> onFilterChange.run());
-        searchPanel.add(new JLabel("Search:"), BorderLayout.WEST);
+        
+        JLabel searchLabel = new JLabel("Search:");
+        searchLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        searchLabel.setForeground(new Color(66, 66, 66));
+        
+        searchPanel.add(searchLabel, BorderLayout.WEST);
         searchPanel.add(searchField, BorderLayout.CENTER);
 
         // First row of filters
@@ -87,11 +100,26 @@ public class FiltersPanel extends JPanel {
         experienceFilter = new JComboBox<>(new String[]{"All", "Entry Level", "1-3 years", "3-5 years", "5+ years"});
         JPanel experiencePanel = createFilterPanel("Experience:", experienceFilter);
         
-        // Salary panel
-        JPanel salaryPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        // Salary panel with modern styling
+        JPanel salaryPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        salaryPanel.setBackground(Color.WHITE);
         minSalarySpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100000, 1000));
         maxSalarySpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100000, 1000));
-        salaryPanel.add(new JLabel("Salary:"));
+        
+        JLabel salaryLabel = new JLabel("Salary:");
+        salaryLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        salaryLabel.setForeground(new Color(66, 66, 66));
+        
+        // Style spinners
+        JComponent minEditor = minSalarySpinner.getEditor();
+        JFormattedTextField minField = ((JSpinner.DefaultEditor) minEditor).getTextField();
+        minField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        
+        JComponent maxEditor = maxSalarySpinner.getEditor();
+        JFormattedTextField maxField = ((JSpinner.DefaultEditor) maxEditor).getTextField();
+        maxField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        
+        salaryPanel.add(salaryLabel);
         salaryPanel.add(minSalarySpinner);
         salaryPanel.add(new JLabel("-"));
         salaryPanel.add(maxSalarySpinner);
@@ -102,28 +130,61 @@ public class FiltersPanel extends JPanel {
         mainFilterPanel.add(salaryPanel, gbc);
 
         // Bottom panel with checkboxes and buttons
-        JPanel bottomPanel = new JPanel(new BorderLayout(5, 0));
+        JPanel bottomPanel = new JPanel(new BorderLayout(8, 0));
+        bottomPanel.setBackground(Color.WHITE);
         
-        // Checkbox panel
-        JPanel checkboxPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        remoteFilter = new JCheckBox("Remote Only");
-        foreignCompanyFilter = new JCheckBox("Foreign Companies");
-        internshipFilter = new JCheckBox("Internships");
+        // Checkbox panel with modern styling
+        JPanel checkboxPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
+        checkboxPanel.setBackground(Color.WHITE);
+        
+        // Style checkboxes
+        remoteFilter = createStyledCheckbox("Remote Only");
+        foreignCompanyFilter = createStyledCheckbox("Foreign Companies");
+        internshipFilter = createStyledCheckbox("Internships");
+        
+        // Style publication date filter
+        JLabel publishedLabel = new JLabel("Published:");
+        publishedLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        publishedLabel.setForeground(new Color(66, 66, 66));
+        
         publicationDateFilter = new JComboBox<>(new String[]{
             "All Time", "Today", "Last 3 Days", "Last Week", "Last Month"
         });
+        publicationDateFilter.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        publicationDateFilter.setBackground(Color.WHITE);
         
         checkboxPanel.add(remoteFilter);
         checkboxPanel.add(foreignCompanyFilter);
         checkboxPanel.add(internshipFilter);
-        checkboxPanel.add(new JLabel("Published:"));
+        checkboxPanel.add(publishedLabel);
         checkboxPanel.add(publicationDateFilter);
         
-        // Button and count panel
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        // Button and count panel with modern styling
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
+        buttonPanel.setBackground(Color.WHITE);
+        
         JButton applyButton = new JButton("Apply Filters");
+        applyButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        applyButton.setForeground(Color.WHITE);
+        applyButton.setBackground(new Color(25, 118, 210));
+        applyButton.setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
+        applyButton.setFocusPainted(false);
         applyButton.addActionListener(e -> onFilterChange.run());
+        
+        // Add hover effect to button
+        applyButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                applyButton.setBackground(new Color(21, 101, 192));
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                applyButton.setBackground(new Color(25, 118, 210));
+            }
+        });
+        
         resultCount = new JLabel("0 jobs found");
+        resultCount.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        resultCount.setForeground(new Color(66, 66, 66));
+        
         buttonPanel.add(resultCount);
         buttonPanel.add(applyButton);
 
@@ -137,10 +198,28 @@ public class FiltersPanel extends JPanel {
     }
 
     private JPanel createFilterPanel(String label, JComboBox<String> comboBox) {
-        JPanel panel = new JPanel(new BorderLayout(5, 0));
-        panel.add(new JLabel(label), BorderLayout.WEST);
+        JPanel panel = new JPanel(new BorderLayout(8, 0));
+        panel.setBackground(Color.WHITE);
+        
+        JLabel filterLabel = new JLabel(label);
+        filterLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        filterLabel.setForeground(new Color(66, 66, 66));
+        
+        comboBox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        comboBox.setBackground(Color.WHITE);
+        comboBox.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200)));
+        
+        panel.add(filterLabel, BorderLayout.WEST);
         panel.add(comboBox, BorderLayout.CENTER);
         return panel;
+    }
+
+    private JCheckBox createStyledCheckbox(String text) {
+        JCheckBox checkbox = new JCheckBox(text);
+        checkbox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        checkbox.setForeground(new Color(66, 66, 66));
+        checkbox.setBackground(Color.WHITE);
+        return checkbox;
     }
 
     private void initializeFilters() {

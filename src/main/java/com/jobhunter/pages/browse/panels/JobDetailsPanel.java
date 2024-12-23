@@ -1,6 +1,7 @@
 package com.jobhunter.pages.browse.panels;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
 import java.awt.Desktop;
@@ -10,16 +11,17 @@ public class JobDetailsPanel extends JPanel {
     private JEditorPane detailsPane;
     private static final String CSS = 
         "<style>\n" +
-        "    body { font-family: Arial, sans-serif; margin: 10px; line-height: 1.4; }\n" +
-        "    h2 { color: #2c3e50; margin-top: 10px; margin-bottom: 5px; font-size: 14px; }\n" +
-        "    .section { margin-bottom: 8px; }\n" +
-        "    .label { color: #7f8c8d; font-weight: bold; }\n" +
-        "    .value { color: #2c3e50; }\n" +
-        "    .skills { margin: 5px 0 5px 20px; }\n" +
-        "    .link { color: #3498db; text-decoration: underline; }\n" +
-        "    .date { color: #e74c3c; }\n" +
-        "    .highlight { background-color: #f1c40f; padding: 2px 5px; border-radius: 3px; }\n" +
-        "    .bullet-point { color: #95a5a6; margin-right: 5px; }\n" +
+        "    body { font-family: 'Segoe UI', sans-serif; margin: 15px; line-height: 1.5; color: #333; }\n" +
+        "    h2 { color: #1976D2; margin: 20px 0 10px; font-size: 16px; font-weight: 600; }\n" +
+        "    .section { margin-bottom: 15px; background: #fff; padding: 15px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }\n" +
+        "    .label { color: #666; font-weight: 600; font-size: 13px; }\n" +
+        "    .value { color: #333; font-size: 13px; }\n" +
+        "    .skills { margin: 8px 0 8px 20px; }\n" +
+        "    .link { color: #1976D2; text-decoration: none; border-bottom: 1px solid #1976D2; }\n" +
+        "    .date { color: #D32F2F; font-weight: 600; }\n" +
+        "    .highlight { background-color: #E3F2FD; color: #1976D2; padding: 3px 8px; border-radius: 4px; font-weight: 600; }\n" +
+        "    .bullet-point { color: #1976D2; margin-right: 8px; }\n" +
+        "    .description { background: #FAFAFA; padding: 12px; border-left: 3px solid #1976D2; margin: 10px 0; }\n" +
         "</style>";
 
     public JobDetailsPanel() {
@@ -29,15 +31,19 @@ public class JobDetailsPanel extends JPanel {
     private void initialize() {
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder("Job Details"),
-            BorderFactory.createEmptyBorder(5, 5, 5, 5)
+            BorderFactory.createTitledBorder(null, "Job Details",
+                TitledBorder.DEFAULT_JUSTIFICATION,
+                TitledBorder.DEFAULT_POSITION,
+                new Font("Segoe UI", Font.BOLD, 14),
+                new Color(25, 118, 210)),
+            BorderFactory.createEmptyBorder(10, 10, 10, 10)
         ));
 
         detailsPane = new JEditorPane();
         detailsPane.setEditable(false);
         detailsPane.setContentType("text/html");
         detailsPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
-        detailsPane.setFont(new Font("Arial", Font.PLAIN, 12));
+        detailsPane.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         detailsPane.setBackground(new Color(250, 250, 250));
 
         // Add hyperlink listener
@@ -54,12 +60,17 @@ public class JobDetailsPanel extends JPanel {
             }
         });
 
-        // Create scroll pane with custom styling
+        // Create scroll pane with modern styling
         JScrollPane scrollPane = new JScrollPane(detailsPane);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(Color.WHITE);
+
+        // Customize the scrollbar
+        JScrollBar verticalBar = scrollPane.getVerticalScrollBar();
+        verticalBar.setUnitIncrement(16);
+        verticalBar.setPreferredSize(new Dimension(10, 0));
 
         add(scrollPane, BorderLayout.CENTER);
     }

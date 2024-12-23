@@ -50,14 +50,24 @@ public class JobsTablePanel extends JPanel {
             }
         };
 
-        // Initialize table with the model
+        // Initialize table with modern styling
         jobsTable = new JTable(tableModel);
         jobsTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         jobsTable.setFillsViewportHeight(true);
         jobsTable.setShowGrid(true);
-        jobsTable.setGridColor(Color.LIGHT_GRAY);
-        jobsTable.setRowHeight(25);
+        jobsTable.setGridColor(new Color(224, 224, 224));
+        jobsTable.setRowHeight(30);
+        jobsTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        jobsTable.setSelectionBackground(new Color(232, 240, 254));
+        jobsTable.setSelectionForeground(new Color(33, 33, 33));
         jobsTable.getTableHeader().setReorderingAllowed(false);
+        
+        // Style the table header
+        jobsTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+        jobsTable.getTableHeader().setBackground(new Color(245, 245, 245));
+        jobsTable.getTableHeader().setForeground(new Color(66, 66, 66));
+        jobsTable.getTableHeader().setPreferredSize(new Dimension(0, 35));
+        ((JLabel)jobsTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
 
         // Set column widths
         int[] columnWidths = {
@@ -116,12 +126,21 @@ public class JobsTablePanel extends JPanel {
             }
         });
 
-        // Create scroll pane with custom styling
+        // Create scroll pane with modern styling
         JScrollPane scrollPane = new JScrollPane(jobsTable);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(Color.WHITE);
+
+        // Customize scrollbars
+        JScrollBar verticalBar = scrollPane.getVerticalScrollBar();
+        verticalBar.setUnitIncrement(16);
+        verticalBar.setPreferredSize(new Dimension(10, 0));
+
+        JScrollBar horizontalBar = scrollPane.getHorizontalScrollBar();
+        horizontalBar.setUnitIncrement(16);
+        horizontalBar.setPreferredSize(new Dimension(0, 10));
 
         // Add to panel
         add(scrollPane, BorderLayout.CENTER);
@@ -129,9 +148,10 @@ public class JobsTablePanel extends JPanel {
 
     private static class LinkCellRenderer extends JLabel implements TableCellRenderer {
         public LinkCellRenderer() {
-            setForeground(new Color(51, 122, 183)); // Bootstrap-like link color
-            setFont(new Font(getFont().getName(), Font.PLAIN, 12));
-            setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+            setForeground(new Color(25, 118, 210)); // Material blue
+            setFont(new Font("Segoe UI", Font.PLAIN, 13));
+            setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
+            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         }
 
         @Override

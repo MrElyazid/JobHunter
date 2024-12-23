@@ -28,16 +28,20 @@ public class MainPage {
         frame.setBounds(100, 100, 800, 600);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout(10, 10));
+        frame.getContentPane().setBackground(new Color(240, 245, 250)); // Light blue-gray background
 
         // Banner Panel
         JPanel bannerPanel = new JPanel(new BorderLayout());
         bannerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        bannerPanel.setBackground(new Color(25, 118, 210)); // Material blue
         
         JLabel titleLabel = new JLabel("JobHunter", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 36));
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 40));
+        titleLabel.setForeground(Color.WHITE);
         
         JLabel subtitleLabel = new JLabel("Your Moroccan Job Market Analysis Tool", SwingConstants.CENTER);
-        subtitleLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+        subtitleLabel.setFont(new Font("Segoe UI Light", Font.PLAIN, 20));
+        subtitleLabel.setForeground(new Color(224, 236, 255)); // Light blue text
         
         bannerPanel.add(titleLabel, BorderLayout.CENTER);
         bannerPanel.add(subtitleLabel, BorderLayout.SOUTH);
@@ -84,14 +88,17 @@ public class MainPage {
         // Wrap button panel in another panel with padding
         JPanel centeredPanel = new JPanel(new BorderLayout());
         centeredPanel.setBorder(BorderFactory.createEmptyBorder(20, 60, 20, 60));
+        centeredPanel.setBackground(new Color(240, 245, 250)); // Match frame background
         centeredPanel.add(buttonPanel, BorderLayout.CENTER);
         
         frame.add(centeredPanel, BorderLayout.CENTER);
 
         // Footer
         JPanel footerPanel = new JPanel();
+        footerPanel.setBackground(new Color(25, 118, 210)); // Material blue
         JLabel footerLabel = new JLabel("© 2023 JobHunter - All Rights Reserved");
-        footerLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        footerLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        footerLabel.setForeground(Color.WHITE);
         footerPanel.add(footerLabel);
         frame.add(footerPanel, BorderLayout.SOUTH);
     }
@@ -101,18 +108,33 @@ public class MainPage {
         gbc.gridy = index;
         
         JPanel buttonContainer = new JPanel(new BorderLayout(10, 5));
+        buttonContainer.setBackground(Color.WHITE);
         buttonContainer.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(200, 200, 200), 1, true),
             BorderFactory.createEmptyBorder(15, 15, 15, 15)
         ));
         
         JButton button = new JButton(title);
-        button.setFont(new Font("Arial", Font.BOLD, 16));
+        button.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        button.setForeground(new Color(25, 118, 210)); // Material blue
+        button.setBackground(Color.WHITE);
+        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        button.setFocusPainted(false);
         button.addActionListener(listener);
         
+        // Add hover effect
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(new Color(232, 240, 254)); // Light blue background on hover
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(Color.WHITE);
+            }
+        });
+        
         JLabel descLabel = new JLabel(description);
-        descLabel.setFont(new Font("Arial", Font.PLAIN, 12));
-        descLabel.setForeground(Color.GRAY);
+        descLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        descLabel.setForeground(new Color(97, 97, 97)); // Material gray
         
         buttonContainer.add(button, BorderLayout.CENTER);
         buttonContainer.add(descLabel, BorderLayout.SOUTH);
