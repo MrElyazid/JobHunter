@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import com.jobhunter.pages.refreshDb.RefreshDbPage;
 import com.jobhunter.pages.browse.BrowseJobsPage;
-import com.jobhunter.pages.chatbot.ChatbotPage;
 import com.jobhunter.pages.statistics.StatisticsPage;
 import com.jobhunter.pages.regression.RegressionModelsPage;
 
@@ -64,14 +63,9 @@ public class MainPage {
             "Browse Jobs",
             "Search and filter job listings",
             e -> openBrowseJobs());
-            
-        addButton(buttonPanel, gbc, 2,
-            "AI Chatbot",
-            "Get intelligent job market insights",
-            e -> openChatbot());
-            
+  
         addButton(buttonPanel, gbc, 3,
-            "Statistics & ML",
+            "Statistics",
             "View market trends and analysis",
             e -> openStatistics());
 
@@ -96,7 +90,7 @@ public class MainPage {
         // Footer
         JPanel footerPanel = new JPanel();
         footerPanel.setBackground(new Color(25, 118, 210)); // Material blue
-        JLabel footerLabel = new JLabel("© 2023 JobHunter - All Rights Reserved");
+        JLabel footerLabel = new JLabel("© 2024 JobHunter - All Rights Reserved");
         footerLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         footerLabel.setForeground(Color.WHITE);
         footerPanel.add(footerLabel);
@@ -154,11 +148,6 @@ public class MainPage {
         browsePage.show();
     }
 
-    private void openChatbot() {
-        frame.setVisible(false);
-        ChatbotPage chatbotPage = new ChatbotPage();
-        chatbotPage.show();
-    }
 
     private void openStatistics() {
         frame.setVisible(false);

@@ -3,6 +3,7 @@ package com.jobhunter.pages.refreshDb;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -212,6 +213,22 @@ public class RefreshDbPage {
         frame.add(mainPanel, BorderLayout.CENTER);
     }
 
+    private void clearJsonFiles() {
+        try {
+            // Clear the main database files
+            new File("database/database.json").delete();
+            new File("database/database1.json").delete();
+            new File("database/output_database.json").delete();
+            
+            // Create new empty files
+            new File("database/database.json").createNewFile();
+            new File("database/database1.json").createNewFile();
+            new File("database/output_database.json").createNewFile();
+        } catch (IOException e) {
+            updateLog("Error clearing JSON files: " + e.getMessage());
+        }
+    }
+
     private void startRefreshProcess() {
         startButton.setEnabled(false);
         progressBar.setValue(0);
@@ -223,6 +240,12 @@ public class RefreshDbPage {
         // Get database operation mode
         final boolean appendMode = appendModeRadio.isSelected();
         
+        // Clear JSON files before starting
+        if (!appendMode) {
+            updateLog("Clearing JSON files...");
+            clearJsonFiles();
+        }
+        
         // Update page counts from spinners
         for (ScrapingSite site : scrapingSites) {
             JSpinner spinner = pageCountSpinners.get(site.getName());
@@ -232,6 +255,8 @@ public class RefreshDbPage {
         // Create a background thread for the refresh process
         new Thread(() -> {
             try {
+                // Clear files even in append mode to ensure only selected data is processed
+                clearJsonFiles();
                 scrapingService.startScraping(scrapingSites, cleaningPipeline, appendMode);
             } catch (Exception e) {
                 SwingUtilities.invokeLater(() -> {

@@ -50,7 +50,7 @@ public class AnapecCleaner implements JobCleaner {
     @Override
     public JSONObject cleanJobOffer(JSONObject rawJobOffer) {
         JSONObject cleanedJobOffer = new JSONObject();
-
+        
         // Extract and clean fields
         cleanedJobOffer.put("location", extractLocation(rawJobOffer));
         cleanedJobOffer.put("sector", extractSector(rawJobOffer));

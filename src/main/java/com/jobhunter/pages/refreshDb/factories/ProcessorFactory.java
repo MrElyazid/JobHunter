@@ -1,5 +1,6 @@
 package com.jobhunter.pages.refreshDb.factories;
 
+import java.util.List;
 import com.jobhunter.Cleaner.CleanLLM;
 import com.jobhunter.Cleaner.RegExCleaner;
 import com.jobhunter.Cleaner.Cleaner;
@@ -14,10 +15,13 @@ public class ProcessorFactory {
         DATABASE_INSERTER
     }
 
-    public static DataProcessor createProcessor(ProcessorType type) {
+    public static DataProcessor createProcessor(ProcessorType type, Object... args) {
         Class<?> processorClass;
         switch (type) {
             case REGEX_CLEANER:
+                if (args.length > 0 && args[0] instanceof List) {
+                    return new RegExCleaner((List<String>) args[0]);
+                }
                 processorClass = RegExCleaner.class;
                 break;
             case LLM_CLEANER:

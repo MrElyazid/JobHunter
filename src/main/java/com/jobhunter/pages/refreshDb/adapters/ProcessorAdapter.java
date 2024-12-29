@@ -20,18 +20,30 @@ public class ProcessorAdapter implements DataProcessor {
     @Override
     public void execute() throws Exception {
         try {
-            // First try to find and invoke a 'process' method
+            // First try to find and invoke a 'processAllJobOffers' method (for RegExCleaner)
             try {
-                Method processMethod = processorClass.getMethod("process");
+                Method processMethod = processorClass.getMethod("processAllJobOffers");
                 processMethod.invoke(processor);
                 return;
-            } catch (NoSuchMethodException e) {
-                // If 'process' method doesn't exist, try 'main' method
-                Method mainMethod = processorClass.getMethod("main", String[].class);
-                mainMethod.invoke(null, (Object) new String[0]);
+            } catch (NoSuchMethodException e1) {
+                // Then try 'process' method
+                try {
+                    Method processMethod = processorClass.getMethod("process");
+                    processMethod.invoke(processor);
+                    return;
+                } catch (NoSuchMethodException e2) {
+                    // Finally try 'main' method
+                    try {
+                        Method mainMethod = processorClass.getMethod("main", String[].class);
+                        mainMethod.invoke(null, (Object) new String[0]);
+                    } catch (NoSuchMethodException e3) {
+                        throw new Exception("No suitable execution method found in " + processorClass.getSimpleName());
+                    }
+                }
             }
         } catch (Exception e) {
-            throw new Exception("Failed to execute processor: " + e.getMessage());
+            String errorMsg = e.getMessage() != null ? e.getMessage() : "Unknown error occurred";
+            throw new Exception("Failed to execute processor " + processorClass.getSimpleName() + ": " + errorMsg, e);
         }
     }
 

@@ -49,69 +49,78 @@ public class RekruteCleaner implements JobCleaner {
     @Override
     public JSONObject cleanJobOffer(JSONObject rawJobOffer) {
         JSONObject cleanedJobOffer = new JSONObject();
-
-        // Extract and clean fields
-        cleanedJobOffer.put("location", extractLocation(rawJobOffer));
-        cleanedJobOffer.put("sector", extractSector(rawJobOffer));
-        cleanedJobOffer.put("job_description", cleanText(rawJobOffer.optString("postDescription", "NA")));
-        cleanedJobOffer.put("min_salary", extractSalary(rawJobOffer));
-        cleanedJobOffer.put("is_remote", isRemote(rawJobOffer) ? 1 : 0);
-        cleanedJobOffer.put("hard_skills", new JSONArray(extractSkills(rawJobOffer, true)).toString());
-        cleanedJobOffer.put("soft_skills", new JSONArray(extractSkills(rawJobOffer, false)).toString());
-        cleanedJobOffer.put("company", cleanText(rawJobOffer.optString("company", "NA")));
-        cleanedJobOffer.put("foriegn_company", isForeignCompany(rawJobOffer) ? 1 : 0);
-        cleanedJobOffer.put("company_description", cleanText(rawJobOffer.optString("recruiterDescription", "NA")));
-        cleanedJobOffer.put("contract_type", extractContractType(rawJobOffer));
-        cleanedJobOffer.put("is_internship", isInternship(rawJobOffer) ? 1 : 0);
-        cleanedJobOffer.put("source", "Rekrute");
-        cleanedJobOffer.put("link", rawJobOffer.optString("url", "NA"));
-        cleanedJobOffer.put("min_experience", extractMinExperience(rawJobOffer));
-        cleanedJobOffer.put("diploma", new JSONArray(extractDiploma(rawJobOffer)).toString());
-        cleanedJobOffer.put("title", cleanText(rawJobOffer.optString("title", "NA")));
-        cleanedJobOffer.put("application_date", LocalDate.now().toString());
-        cleanedJobOffer.put("date_of_publication", LocalDate.now().toString());
-        cleanedJobOffer.put("company_address", cleanText(extractCompanyAddress(rawJobOffer)));
-        cleanedJobOffer.put("company_website", extractCompanyWebsite(rawJobOffer));
-        cleanedJobOffer.put("region", extractRegion(rawJobOffer));
-        cleanedJobOffer.put("desired_profile", cleanText(rawJobOffer.optString("profilDescription", "NA")));
-        cleanedJobOffer.put("personality_traits", extractPersonalityTraits(rawJobOffer));
-        cleanedJobOffer.put("languages", extractLanguages(rawJobOffer));
-        cleanedJobOffer.put("language_profeciency", extractLanguageProficiency(rawJobOffer));
-        cleanedJobOffer.put("recommended_skills", extractRecommendedSkills(rawJobOffer));
-        cleanedJobOffer.put("job", cleanText(rawJobOffer.optString("title", "NA")));
-
-        return cleanedJobOffer;
+        
+        try {
+            // Extract and clean fields with proper null checking
+            cleanedJobOffer.put("location", extractLocation(rawJobOffer));
+            cleanedJobOffer.put("sector", extractSector(rawJobOffer));
+            cleanedJobOffer.put("job_description", cleanText(rawJobOffer.optString("postDescription", "")));
+            cleanedJobOffer.put("min_salary", extractSalary(rawJobOffer));
+            cleanedJobOffer.put("is_remote", isRemote(rawJobOffer));
+            
+            // Handle JSONArrays properly
+            cleanedJobOffer.put("hard_skills", new JSONArray(extractSkills(rawJobOffer, true)));
+            cleanedJobOffer.put("soft_skills", new JSONArray(extractSkills(rawJobOffer, false)));
+            
+            cleanedJobOffer.put("company", cleanText(rawJobOffer.optString("company", "")));
+            cleanedJobOffer.put("foreign_company", isForeignCompany(rawJobOffer));
+            cleanedJobOffer.put("company_description", cleanText(rawJobOffer.optString("recruiterDescription", "")));
+            cleanedJobOffer.put("contract_type", extractContractType(rawJobOffer));
+            cleanedJobOffer.put("is_internship", isInternship(rawJobOffer));
+            cleanedJobOffer.put("source", "Rekrute");
+            cleanedJobOffer.put("link", rawJobOffer.optString("url", ""));
+            
+            cleanedJobOffer.put("min_experience", extractMinExperience(rawJobOffer));
+            cleanedJobOffer.put("diploma", new JSONArray(extractDiploma(rawJobOffer)));
+            
+            cleanedJobOffer.put("title", cleanText(rawJobOffer.optString("title", "")));
+            
+            // Extract actual dates if available
+            String pubDate = rawJobOffer.optString("publicationDate", "");
+            String appDate = rawJobOffer.optString("applicationDeadline", "");
+            cleanedJobOffer.put("date_of_publication", pubDate.isEmpty() ? LocalDate.now().toString() : pubDate);
+            cleanedJobOffer.put("application_date", appDate.isEmpty() ? LocalDate.now().toString() : appDate);
+            
+            cleanedJobOffer.put("company_address", cleanText(extractCompanyAddress(rawJobOffer)));
+            cleanedJobOffer.put("company_website", extractCompanyWebsite(rawJobOffer));
+            cleanedJobOffer.put("region", extractRegion(rawJobOffer));
+            cleanedJobOffer.put("desired_profile", cleanText(rawJobOffer.optString("profilDescription", "")));
+            cleanedJobOffer.put("personality_traits", extractPersonalityTraits(rawJobOffer));
+            cleanedJobOffer.put("languages", extractLanguages(rawJobOffer));
+            cleanedJobOffer.put("language_proficiency", extractLanguageProficiency(rawJobOffer));
+            cleanedJobOffer.put("recommended_skills", extractRecommendedSkills(rawJobOffer));
+            cleanedJobOffer.put("job", cleanText(rawJobOffer.optString("title", "")));
+            
+            // Validate that we have at least some essential fields
+            if (cleanedJobOffer.optString("title", "").isEmpty() && 
+                cleanedJobOffer.optString("company", "").isEmpty()) {
+                return null; // Skip invalid offers
+            }
+            
+            return cleanedJobOffer;
+        } catch (Exception e) {
+            System.err.println("Error cleaning job offer: " + e.getMessage());
+            return null;
+        }
     }
 
     private String cleanText(String text) {
-        if (text == null || text.isEmpty() || text.equals("N/A")) return "NA";
-    
-        // Replace specific accented characters with their ASCII equivalents before normalization
-        String preprocessed = text
-            .replaceAll("é", "e")
-            .replaceAll("è", "e")
-            .replaceAll("ê", "e")
-            .replaceAll("à", "a")
-            .replaceAll("ù", "u")
-            .replaceAll("ç", "c")
-            .replaceAll("ô", "o")
-            .replaceAll("î", "i")
-            .replaceAll("ï", "i")
-            .replaceAll("â", "a");
-    
-        // Normalize the text to NFD form (decomposes characters into base + diacritics)
-        String normalized = Normalizer.normalize(preprocessed, Normalizer.Form.NFD);
-    
-        // Remove any remaining diacritical marks
-        String replaced = normalized.replaceAll("\\p{M}", "");
-    
-        // Replace invalid characters with a space
-        replaced = replaced.replaceAll("[^a-zA-Z0-9\\s.,;:()'-]", " ");
-    
-        // Normalize spaces and trim
-        replaced = replaced.replaceAll("\\s+", " ").trim();
-    
-        return replaced.isEmpty() ? "NA" : replaced;
+        if (text == null || text.isEmpty()) return "";
+        
+        // Normalize line endings and trim
+        text = text.replaceAll("\\r\\n|\\r|\\n", " ").trim();
+        
+        // Normalize accented characters
+        text = Normalizer.normalize(text, Normalizer.Form.NFD)
+                        .replaceAll("\\p{M}", "");
+        
+        // Remove special characters except basic punctuation
+        text = text.replaceAll("[^\\p{L}\\p{N}\\s.,;:()'-]", " ");
+        
+        // Normalize spaces
+        text = text.replaceAll("\\s+", " ").trim();
+        
+        return text;
     }
     
     
