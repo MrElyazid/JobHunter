@@ -125,7 +125,7 @@ The application features a user-friendly interface with five main sections:
 - Java Development Kit (JDK) 11 or higher
 - MySQL Server 8.0+
 - Maven 3.6+
-- OpenRouter API key
+- OpenRouter API key (Optional)
 
 ### Installation Steps
 1. Clone the repository
