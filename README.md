@@ -1,6 +1,6 @@
 # JobHunter - Moroccan Job Market Analysis Tool
 
-JobHunter is a sophisticated Java-based application designed to analyze the Moroccan job market through web scraping, data processing, and advanced analytics. It provides comprehensive insights into job opportunities, market trends, and career analytics through an intuitive graphical interface.
+JobHunter is a sophisticated Java-based application designed to analyze the Moroccan job market through web scraping, data processing, and advanced analytics.
 
 ## Core Features
 
@@ -18,7 +18,7 @@ JobHunter is a sophisticated Java-based application designed to analyze the Moro
   - Detailed data extraction (DataScraper): Extracts comprehensive job information
 
 ### 2. Advanced Data Processing Pipeline
-- Dual cleaning approach for optimal data quality:
+- Dual cleaning approach :
   1. AI-Powered Cleaning (Cleaner.java):
      - Uses OpenRouter API for intelligent data structuring and cleaning using GPT-4o-mini.
      - Extracts and normalizes key job information
@@ -59,19 +59,13 @@ The application features a user-friendly interface with five main sections:
    - Advanced search and filtering capabilities
    - Detailed job view with formatted information
 
-3. **AI Chatbot**
-   - Interactive job market analysis
-   - Personalized job recommendations
-   - Market trend insights
-   - Career guidance support
-
-4. **Statistics Dashboard**
+3. **Statistics Dashboard**
    - Geographical distribution analysis
    - Salary range analytics
    - Company and sector insights
    - Contract type distribution
 
-5. **ML Models**
+4. **ML Models**
    - Salary prediction based on job parameters, uses Linear Regression.
    - Sector prediction model based on job patrameters, uses Decision Tree (J48).
    - Job Recommendation based on job parameters, uses KNN.
@@ -96,7 +90,7 @@ The application features a user-friendly interface with five main sections:
    - Regular expression patterns
    - JSON-based dictionaries
    - Custom cleaning algorithms
-   - The ``java.text.normalizer` for text normalization
+   - The `java.text.normalizer` for text normalization
 
 3. **Database Layer**
    - MySQL database
@@ -123,7 +117,7 @@ The application features a user-friendly interface with five main sections:
 
 ### Prerequisites
 - Java Development Kit (JDK) 11 or higher
-- MySQL Server 8.0+
+- MySQL Server 8.0+ or XAMPP and PHPmyadmin.
 - Maven 3.6+
 - OpenRouter API key (Optional)
 
